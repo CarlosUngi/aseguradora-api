@@ -26,6 +26,7 @@ public class Customer {
     private String apellidos;
     private String email;
     private String telefono;
+    private Boolean activo;
 
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
@@ -46,6 +47,7 @@ public class Customer {
         this.telefono = telefono;
         this.fechaNacimiento = fechaNacimiento;
         this.policies = policies;
+        this.activo=true;
     }
 
     public Long getId() {
@@ -118,5 +120,13 @@ public class Customer {
 
     public void setPolicies(List<Policy> policies) {
         this.policies = policies;
+    }
+
+    public Boolean getActive() {
+        return activo;
+    }
+
+    public void setActive(Boolean activo) {
+        this.activo = activo;
     }
 }

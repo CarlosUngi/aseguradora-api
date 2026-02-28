@@ -4,9 +4,11 @@ import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.CustomerRepositoryPort;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.out.persistence.repository.JpaCustomerRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -26,8 +28,8 @@ public class CustomerPersistenceAdapter implements CustomerRepositoryPort {
     }
 
     @Override
-    public List<Customer> findAll() {
-        return jpaCustomerRepository.findAll();
+    public Page<Customer> findAll(Pageable pageable) {
+        return jpaCustomerRepository.findAll(pageable);
     }
 
     @Override

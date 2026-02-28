@@ -6,8 +6,10 @@ import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.CustomerReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +29,11 @@ public class CustomerUseCase implements CustomerServicePort {
     }
 
     @Override
-    public List<Customer> findAll() {
-        return customerRepositoryPort.findAll();
+    public Page<Customer> findAll(Pageable pageable){
+       /**
+     * Delega la búsqueda paginada al puerto de salida (repositorio).
+     */
+       return customerRepositoryPort.findAll(pageable);
     }
 
     @Override
