@@ -2,6 +2,9 @@
 ./mvnw clean spring-boot:run
 ./mvnw clean test
 
+http://localhost:8080/h2-console
+http://localhost:8080/swagger-ui.html
+
 erDiagram
     CUSTOMER ||--o{ POLICY : "contrata"
     POLICY_TYPE ||--o{ POLICY : "clasifica"
