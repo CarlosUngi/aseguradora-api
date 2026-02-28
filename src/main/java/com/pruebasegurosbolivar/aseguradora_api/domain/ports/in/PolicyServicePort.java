@@ -8,6 +8,6 @@ import java.util.List;
  */
 public interface PolicyServicePort {
     Policy createPolicy(Policy policy);
-    List<Policy> findByCustomerId(Long customerId);
+    List<Policy> findByPolicyList();
     Policy getPolicyDetail(Long policyId);
 }
