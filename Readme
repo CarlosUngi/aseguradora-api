@@ -1,3 +1,7 @@
+./mvnw javadoc:javadoc
+./mvnw clean spring-boot:run
+./mvnw clean test
+
 erDiagram
     CUSTOMER ||--o{ POLICY : "contrata"
     POLICY_TYPE ||--o{ POLICY : "clasifica"

@@ -8,12 +8,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Implementación de los casos de uso para pólizas.
+ * Esta clase actúa como el orquestador entre los puertos de entrada y salida.
+ */
 @Service
 @RequiredArgsConstructor
 public class PolicyUseCase implements PolicyServicePort {
 
     private final PolicyRepositoryPort policyRepositoryPort;
-
+    
+    /**
+     * {@inheritDoc}
+     * <p>Implementa la lógica de guardado directo mediante el adaptador de persistencia.</p>
+     */
     @Override
     public Policy createPolicy(Policy policy) {
         // TODO: Implementar validación de póliza de vida aquí
