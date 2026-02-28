@@ -1,0 +1,57 @@
+erDiagram
+    CUSTOMER ||--o{ POLICY : "contrata"
+    POLICY_TYPE ||--o{ POLICY : "clasifica"
+    POLICY ||--o{ BENEFICIARY : "asigna (Vida/Salud)"
+    
+    %% Relación Muchos a Muchos entre Póliza y Vehículo
+    POLICY ||--o{ POLICY_VEHICLE : "asocia"
+    VEHICLE ||--o{ POLICY_VEHICLE : "incluida en"
+
+    CUSTOMER {
+        long id PK
+        string tipo_documento "CC, CE, NIT"
+        string numero_documento "Unique"
+        string nombres
+        string apellidos
+        string email
+        string telefono
+        date fecha_nacimiento
+    }
+
+    POLICY_TYPE {
+        int id PK
+        string nombre "Vida, Vehículo, Salud"
+        string observaciones
+    }
+
+    POLICY {
+        long id PK
+        long customer_id FK
+        int policy_type_id FK
+        date fecha_inicio
+        date fecha_fin
+        decimal tarifa_total
+        string estado "ACTIVA, VENCIDA"
+    }
+
+    VEHICLE {
+        long id PK
+        string placa "Unique"
+        string marca
+        string modelo
+        string anio
+    }
+
+    POLICY_VEHICLE {
+        long policy_id PK, FK
+        long vehicle_id PK, FK
+    }
+
+    BENEFICIARY {
+        long id PK
+        long policy_id FK
+        string nombres
+        string apellidos
+        string parentesco "Hijo, Padre, Cónyuge, Beneficiario"
+        string numero_documento
+    }
