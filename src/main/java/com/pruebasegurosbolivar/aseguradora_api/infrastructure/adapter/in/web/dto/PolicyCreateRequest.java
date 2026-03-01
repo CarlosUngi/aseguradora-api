@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.RelationshipType;
+
 @Data
 @Schema(description = "Solicitud para crear cualquier tipo de póliza")
 public class PolicyCreateRequest {
@@ -32,7 +34,8 @@ public class PolicyCreateRequest {
     public static class BeneficiaryRequest {
         private String nombres;
         private String apellidos;
-        private String parentesco;
+        @Schema(description = "Parentesco permitido", example = "PADRE ,MADRE ,HIJO ,HIJA ,ESPOSA ,ESPOSO")
+        private RelationshipType parentesco;
         private String numeroDocumento;
     }
 

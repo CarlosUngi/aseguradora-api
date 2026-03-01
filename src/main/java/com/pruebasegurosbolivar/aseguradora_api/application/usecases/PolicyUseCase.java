@@ -2,8 +2,10 @@ package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
 
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Beneficiary;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.RelationshipType;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.exception.BusinessException;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
+import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.BeneficiaryRepositoryPort;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.CustomerRepositoryPort;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.PolicyRepositoryPort;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ public class PolicyUseCase implements PolicyServicePort {
 
     private final PolicyRepositoryPort policyRepositoryPort;
     private final CustomerRepositoryPort customerRepositoryPort;
+    private final BeneficiaryRepositoryPort beneficiaryRepositoryPort;
+
 
     /**
      * {@inheritDoc}
@@ -90,11 +94,23 @@ public class PolicyUseCase implements PolicyServicePort {
                 .ifPresent(b -> {
                     throw new BusinessException("La póliza de Salud no permite el registro de vehículos.");
                 });
-        Optional.ofNullable(policy.getBeneficiaries())
-                .filter(list -> !list.isEmpty())
-                .orElseThrow(
-                        () -> new BusinessException("Debe incluir al menos un vehículo para este tipo de póliza."));
 
+        if (!Optional.ofNullable(policy.getBeneficiaries()).isEmpty()) {
+
+            boolean haveParents = policy.getBeneficiaries().stream()
+                    .anyMatch(b -> b.getParentesco() == RelationshipType.PADRE ||
+                            b.getParentesco() == RelationshipType.MADRE);
+
+            Boolean haveOwnFamily = policy.getBeneficiaries().stream()
+                    .anyMatch(b -> b.getParentesco() == RelationshipType.HIJO ||
+                            b.getParentesco() == RelationshipType.HIJA ||
+                            b.getParentesco() == RelationshipType.ESPOSA ||
+                            b.getParentesco() == RelationshipType.ESPOSO);
+
+            if (haveParents && haveOwnFamily)
+                throw new BusinessException("La poliza de salud solo permite registro del cliente, sus padres o su familia propia ");
+
+        }
 
     }
 
@@ -115,7 +131,6 @@ public class PolicyUseCase implements PolicyServicePort {
 
     @Override
     public List<Beneficiary> findBeneficiaryByPolicyId(Long policyId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findBeneficiaryByPolicyId'");
+        return beneficiaryRepositoryPort.findBeneficiaryByPolicyId(policyId);
     }
 }

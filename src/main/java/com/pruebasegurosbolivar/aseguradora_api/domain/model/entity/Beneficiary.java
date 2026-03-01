@@ -19,7 +19,9 @@ public class Beneficiary {
 
     private String nombres;
     private String apellidos;
-    private String parentesco;
+
+    @Enumerated(EnumType.STRING)
+    private RelationshipType parentesco;
     
     @Column(name = "numero_documento")
     private String numeroDocumento;
@@ -27,7 +29,7 @@ public class Beneficiary {
     public Beneficiary() {
     }
 
-    public Beneficiary(Long id, Policy policy, String nombres, String apellidos, String parentesco, String numeroDocumento) {
+    public Beneficiary(Long id, Policy policy, String nombres, String apellidos, RelationshipType parentesco, String numeroDocumento) {
         this.id = id;
         this.policy = policy;
         this.nombres = nombres;
@@ -68,11 +70,11 @@ public class Beneficiary {
         this.apellidos = apellidos;
     }
 
-    public String getParentesco() {
+    public RelationshipType getParentesco() {
         return parentesco;
     }
 
-    public void setParentesco(String parentesco) {
+    public void setParentesco(RelationshipType parentesco) {
         this.parentesco = parentesco;
     }
 
