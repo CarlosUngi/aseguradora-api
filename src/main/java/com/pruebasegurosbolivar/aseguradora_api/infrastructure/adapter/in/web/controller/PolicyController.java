@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/policies")
+@RequestMapping("/api/v1/policies")
 @RequiredArgsConstructor
 @Tag(name = "Gestión de Pólizas", description = "APIs para la gestión de pólizas de seguros")
 public class PolicyController {
@@ -42,18 +42,6 @@ public class PolicyController {
 
         Policy createdPolicy = policyServicePort.createPolicy(policy);
         return new ResponseEntity<>(createdPolicy, HttpStatus.CREATED);
-    }
-
-    /**
-     * Obtiene todas las pólizas.
-     *
-     * @return Una lista de todas las pólizas.
-     */
-    @GetMapping
-    @Operation(summary = "Obtener todas las pólizas", description = "Obtiene una lista de todas las pólizas.")
-    public ResponseEntity<List<Policy>> getAllPolicies() {
-        List<Policy> policies = policyServicePort.findAllPolicies();
-        return ResponseEntity.ok(policies);
     }
 
     /**

@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
  */
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -104,9 +103,9 @@ public class CustomerController {
      * @return void y estado 200 OK.
      */
     @Operation(summary = "Eliminar un cliente", description = "Elimina un cliente en la base de datos")
-    @DeleteMapping("/{idClient}")
-    public ResponseEntity<Void> delete(@PathVariable Long idClient) {
-        customerServicePort.delete(idClient);
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<Void> delete(@PathVariable Long customerId) {
+        customerServicePort.delete(customerId);
         return ResponseEntity.ok().build();
     }
 

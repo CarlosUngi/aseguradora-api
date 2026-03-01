@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementación de los casos de uso para pólizas.
@@ -39,7 +40,7 @@ public class PolicyUseCase implements PolicyServicePort {
 
         switch (typeId) {
             case 1: // VIDA
-                validateVida(policy);
+                validateVida(policy, customerId);
                 break;
             case 2: // VEHÍCULO
                 validateVehiculo(policy);
@@ -54,27 +55,46 @@ public class PolicyUseCase implements PolicyServicePort {
         return policyRepositoryPort.save(policy);
     }
 
-    private void validateVida(Policy policy) {
-        if ((policy.getBeneficiaries() != null && !policy.getBeneficiaries().isEmpty()) ||
-                (policy.getVehicles() != null && !policy.getVehicles().isEmpty())) {
-            throw new BusinessException(
-                    "La póliza de Vida no puede contener beneficiarios ni vehículos en la creación.");
-        }
+    private void validateVida(Policy policy, Long customerId) {
+        List<Policy> currentPolicies = policyRepositoryPort.findByCustomerId(customerId);
+        boolean hasLifePolicy = currentPolicies.stream()
+                .anyMatch(p -> p.getPolicyType().getId() == 1);
+        if (hasLifePolicy)
+            throw new BusinessException("Ya existe una póliza de vida activa para este cliente.");
+
+        if (policy.getBeneficiaries().size() > 2)
+            throw new BusinessException("Una Poliza de vida solo puede tener maximo 2 beneficiarios");
+
+        Optional.ofNullable(policy.getVehicles())
+                .filter(v -> !v.isEmpty())
+                .ifPresent(v -> {
+                    throw new BusinessException("La póliza de Vida no permite vehículos.");
+                });
     }
 
     private void validateVehiculo(Policy policy) {
-        if (policy.getBeneficiaries() != null && !policy.getBeneficiaries().isEmpty()) {
-            throw new BusinessException("La póliza de Vehículo no permite el registro de beneficiarios.");
-        }
-        if (policy.getVehicles() == null || policy.getVehicles().isEmpty()) {
-            throw new BusinessException("Debe incluir al menos un vehículo para este tipo de póliza.");
-        }
+        Optional.ofNullable(policy.getBeneficiaries())
+                .filter(b -> !b.isEmpty())
+                .ifPresent(b -> {
+                    throw new BusinessException("La póliza de Vehículo no permite el registro de beneficiarios.");
+                });
+        Optional.ofNullable(policy.getVehicles())
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(
+                        () -> new BusinessException("Debe incluir al menos un vehículo para este tipo de póliza."));
     }
 
     private void validateSalud(Policy policy) {
-        if (policy.getVehicles() != null && !policy.getVehicles().isEmpty()) {
-            throw new BusinessException("La póliza de Salud no permite el registro de vehículos.");
-        }
+        Optional.ofNullable(policy.getVehicles())
+                .filter(b -> !b.isEmpty())
+                .ifPresent(b -> {
+                    throw new BusinessException("La póliza de Salud no permite el registro de vehículos.");
+                });
+        Optional.ofNullable(policy.getBeneficiaries())
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(
+                        () -> new BusinessException("Debe incluir al menos un vehículo para este tipo de póliza."));
+
 
     }
 
