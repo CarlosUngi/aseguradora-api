@@ -35,5 +35,11 @@ public class PolicyPersistenceAdapter implements PolicyRepositoryPort {
         jpaPolicyRepository.deleteById(id);
     }
 
+    @Override
+    public List<Policy> findByCustomerId(Long customerId) {
+       return jpaPolicyRepository.findByCustomerId(customerId);
+    
+    }
+
 
 }

@@ -12,4 +12,5 @@ public interface PolicyServicePort {
     List<Policy> findByPolicyListByClient(Long customerId);
     Policy getPolicyDetail(Long policyId);
     List<Beneficiary> findBeneficiaryByPolicyId(Long policyId);
+    List<Policy> findAllPolicies();
 }

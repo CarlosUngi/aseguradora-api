@@ -13,4 +13,5 @@ public interface PolicyRepositoryPort {
     Optional<Policy> findById(Long id);
     List<Policy> findAll();
     void deleteById(Long id);
+    List<Policy> findByCustomerId(Long customerId);
 }
