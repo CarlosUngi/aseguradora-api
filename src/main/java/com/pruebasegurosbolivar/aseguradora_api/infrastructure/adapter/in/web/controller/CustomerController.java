@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 /**
@@ -38,7 +39,7 @@ public class CustomerController {
      */
     @Operation(summary = "Listar clientes paginados", description = "Retorna una página de clientes. Se pueden usar parámetros 'page' y 'size'.")
     @GetMapping
-    public ResponseEntity<Page<Customer>> getAll(@PageableDefault(size = 10) Pageable pageable) {
+    public ResponseEntity<Page<Customer>> getAll(@ParameterObject @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(customerServicePort.findAll(pageable));
     }
 
@@ -65,7 +66,9 @@ public class CustomerController {
      */
     @Operation(summary = "Crear un nuevo cliente", description = "Crea un nuevo cliente en la base de datos")
     @PostMapping
-    public ResponseEntity<Customer> create(@Valid @RequestBody CustomerCreateRequest request) {
+    public ResponseEntity<Customer> create(@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", examples = {
+        @io.swagger.v3.oas.annotations.media.ExampleObject(name = "Crear Cliente", summary = "Ejemplo para crear un nuevo cliente", value = "{\"tipoDocumento\": \"CC\", \"numeroDocumento\": \"123456789\", \"nombres\": \"Juan\", \"apellidos\": \"Perez\", \"email\": \"juan.perez@example.com\", \"telefono\": \"3001234567\", \"fechaNacimiento\": \"1990-01-15\"}")
+    })) @Valid @RequestBody CustomerCreateRequest request) {
         Customer customer = new Customer();
         customer.setTipoDocumento(request.getTipoDocumento());
         customer.setNumeroDocumento(request.getNumeroDocumento());

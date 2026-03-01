@@ -17,6 +17,7 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("code", "BUSINESS_ERROR");
         response.put("message", ex.getMessage());
+        response.put("originalError", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -26,6 +27,7 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put("code", "INTERNAL_SERVER_ERROR");
         response.put("message", "Ocurrió un error inesperado en el servidor");
+        response.put("originalError", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -13,16 +13,23 @@ import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Relationship
 @Schema(description = "Solicitud para crear cualquier tipo de póliza")
 public class PolicyCreateRequest {
 
+    @Schema(description = "ID del cliente", example = "1")
     @NotNull(message = "El ID del cliente es obligatorio")
     private Long customerId;
 
+    @Schema(description = "ID del tipo de póliza 1 vida, 2 vehículo, 3 salud", example = "1")
     @NotNull(message = "El tipo de póliza es obligatorio (1: Vida, 2: Vehículo, 3: Salud)")
     private Integer policyTypeId;
 
+    @Schema(description = "Fecha de inicio de la póliza", example = "2023-01-01")
+    @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDate fechaInicio;
-    private LocalDate fechaFin;
+
+    @Schema(description = "Fecha de fin de la póliza", example = "2023-12-31")
+    private LocalDate fechaFin; 
+
     private BigDecimal tarifaTotal;
-    private String estado;
+
 
     @Schema(description = "Lista de beneficiarios. Obligatorio/Permitido solo para Salud (ID 3)")
     private List<BeneficiaryRequest> beneficiaries;
