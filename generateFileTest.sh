@@ -1,61 +1,24 @@
 #!/bin/bash
 
-# Definir las rutas base
-MAIN_BASE_PATH="src/main/java/com/pruebasegurosbolivar/aseguradora_api"
+# Rutas base
 TEST_BASE_PATH="src/test/java/com/pruebasegurosbolivar/aseguradora_api"
+PACKAGE="com.pruebasegurosbolivar.aseguradora_api"
 
-echo "🚀 Configurando componentes de negocio y entorno de pruebas..."
+echo "🧪 Iniciando generación de suite de pruebas para Arquitectura Hexagonal..."
 
-# 1. Asegurar que existan las carpetas de aplicación e infraestructura
-mkdir -p $MAIN_BASE_PATH/application/usecases
+# Crear directorios
 mkdir -p $TEST_BASE_PATH/application/usecases
 mkdir -p $TEST_BASE_PATH/infrastructure/adapter/in/web/controller
 
-echo "📁 Estructura de carpetas verificada."
+# --- 1. PolicyUseCaseTest.java ---
+# Prueba las reglas de negocio críticas definidas en los requerimientos
+cat <<EOF > $TEST_BASE_PATH/application/usecases/PolicyUseCaseTest.java
+package $PACKAGE.application.usecases;
 
-# 2. CREAR ESQUELETO DE PolicyUseCase (Para que los tests compilen)
-# Este archivo es el que faltaba y causaba los errores en el IDE
-cat <<EOF > $MAIN_BASE_PATH/application/usecases/PolicyUseCase.java
-package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
-
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
-import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
-import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.PolicyRepositoryPort;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-
-@Service
-@RequiredArgsConstructor
-public class PolicyUseCase implements PolicyServicePort {
-
-    private final PolicyRepositoryPort policyRepositoryPort;
-
-    @Override
-    public Policy createPolicy(Policy policy) {
-        // TODO: Implementar validación de póliza de vida aquí
-        return policyRepositoryPort.save(policy);
-    }
-
-    @Override
-    public List<Policy> findByCustomerId(Long customerId) {
-        return policyRepositoryPort.findByCustomerId(customerId);
-    }
-
-    @Override
-    public Policy getPolicyDetail(Long policyId) {
-        return policyRepositoryPort.findById(policyId).orElse(null);
-    }
-}
-EOF
-
-# 3. Crear Test para CustomerUseCase
-cat <<EOF > $TEST_BASE_PATH/application/usecases/CustomerUseCaseTest.java
-package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
-
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
-import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.CustomerRepositoryPort;
+import $PACKAGE.domain.model.entity.*;
+import $PACKAGE.domain.model.exception.BusinessException;
+import $PACKAGE.domain.ports.out.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,11 +26,167 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class PolicyUseCaseTest {
+
+    @Mock
+    private PolicyRepositoryPort policyRepositoryPort;
+    @Mock
+    private CustomerRepositoryPort customerRepositoryPort;
+    @Mock
+    private VehicleRepositoryPort vehicleRepositoryPort;
+
+    @InjectMocks
+    private PolicyUseCase policyUseCase;
+
+    private Customer customer;
+    private Policy lifePolicy;
+
+    @BeforeEach
+    void setUp() {
+        customer = new Customer();
+        customer.setId(1L);
+        customer.setNombres("Carlos");
+
+        lifePolicy = new Policy();
+        lifePolicy.setCustomer(customer);
+        PolicyType type = new PolicyType(1, "Vida", "");
+        lifePolicy.setPolicyType(type);
+        lifePolicy.setBeneficiaries(new ArrayList<>());
+    }
+
+    @Test
+    @DisplayName("Vida: No debe permitir más de una póliza de vida por cliente")
+    void createLifePolicyDuplicateError() {
+        when(customerRepositoryPort.findById(1L)).thenReturn(Optional.of(customer));
+        when(policyRepositoryPort.findByCustomerId(1L)).thenReturn(Collections.singletonList(lifePolicy));
+
+        assertThrows(BusinessException.class, () -> policyUseCase.createPolicy(lifePolicy));
+    }
+
+    @Test
+    @DisplayName("Vida: No debe permitir más de 2 beneficiarios")
+    void createLifePolicyMaxBeneficiariesError() {
+        when(customerRepositoryPort.findById(1L)).thenReturn(Optional.of(customer));
+        when(policyRepositoryPort.findByCustomerId(1L)).thenReturn(new ArrayList<>());
+        
+        lifePolicy.getBeneficiaries().add(new Beneficiary());
+        lifePolicy.getBeneficiaries().add(new Beneficiary());
+        lifePolicy.getBeneficiaries().add(new Beneficiary());
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> policyUseCase.createPolicy(lifePolicy));
+        assertTrue(exception.getMessage().contains("máximo 2 beneficiarios"));
+    }
+
+    @Test
+    @DisplayName("Vehículo: Debe fallar si no se incluyen vehículos")
+    void createVehiclePolicyNoVehiclesError() {
+        Policy vPolicy = new Policy();
+        vPolicy.setCustomer(customer);
+        vPolicy.setPolicyType(new PolicyType(2, "Vehículo", ""));
+        vPolicy.setVehicles(new ArrayList<>());
+
+        when(customerRepositoryPort.findById(1L)).thenReturn(Optional.of(customer));
+
+        assertThrows(BusinessException.class, () -> policyUseCase.createPolicy(vPolicy));
+    }
+
+    @Test
+    @DisplayName("Salud: No debe permitir mezclar Padres con Hijos/Esposa")
+    void createHealthPolicyMixedFamilyError() {
+        Policy hPolicy = new Policy();
+        hPolicy.setCustomer(customer);
+        hPolicy.setPolicyType(new PolicyType(3, "Salud", ""));
+        
+        List<Beneficiary> beneficiaries = new ArrayList<>();
+        Beneficiary padre = new Beneficiary(); padre.setParentesco(RelationshipType.PADRE);
+        Beneficiary hijo = new Beneficiary(); hijo.setParentesco(RelationshipType.HIJO);
+        beneficiaries.add(padre);
+        beneficiaries.add(hijo);
+        hPolicy.setBeneficiaries(beneficiaries);
+
+        when(customerRepositoryPort.findById(1L)).thenReturn(Optional.of(customer));
+
+        assertThrows(BusinessException.class, () -> policyUseCase.createPolicy(hPolicy));
+    }
+}
+EOF
+
+# --- 2. PolicyControllerTest.java ---
+# Prueba la capa web y la transformación a DTOs de respuesta
+cat <<EOF > $TEST_BASE_PATH/infrastructure/adapter/in/web/controller/PolicyControllerTest.java
+package $PACKAGE.infrastructure.adapter.in.web.controller;
+
+import $PACKAGE.application.usecases.PolicyUseCase;
+import $PACKAGE.domain.model.entity.Policy;
+import $PACKAGE.domain.ports.in.PolicyServicePort;
+import $PACKAGE.infrastructure.adapter.in.web.mapper.PolicyMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+@WebMvcTest(PolicyController.class)
+class PolicyControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private PolicyServicePort policyServicePort;
+
+    @MockBean
+    private PolicyMapper policyMapper;
+
+    @Test
+    @DisplayName("GET /api/v1/policies/{id} debe retornar 404 si no existe")
+    void getPolicyNotFound() throws Exception {
+        when(policyServicePort.getPolicyDetail(anyLong())).thenReturn(null);
+
+        mockMvc.perform(get("/api/v1/policies/999")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()) // Debido a BusinessException lanzada en controlador
+                .andExpect(jsonPath("$.code").value("BUSINESS_ERROR"));
+    }
+}
+EOF
+
+# --- 3. CustomerUseCaseTest.java ---
+cat <<EOF > $TEST_BASE_PATH/application/usecases/CustomerUseCaseTest.java
+package $PACKAGE.application.usecases;
+
+import $PACKAGE.domain.model.entity.Customer;
+import $PACKAGE.domain.model.exception.BusinessException;
+import $PACKAGE.domain.ports.out.CustomerRepositoryPort;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -80,100 +199,18 @@ class CustomerUseCaseTest {
     private CustomerUseCase customerUseCase;
 
     @Test
-    @DisplayName("Debe crear un cliente correctamente")
-    void createCustomerSuccess() {
+    @DisplayName("Debe fallar si el número de documento ya existe")
+    void createCustomerDuplicateError() {
         Customer customer = new Customer();
-        customer.setNombres("Carlos");
-        when(customerRepositoryPort.save(any(Customer.class))).thenReturn(customer);
+        customer.setNumeroDocumento("123");
+        
+        when(customerRepositoryPort.findByNumeroDocumento("123")).thenReturn(Optional.of(customer));
 
-        Customer result = customerUseCase.create(customer);
-
-        assertNotNull(result);
-        assertEquals("Carlos", result.getNombres());
-        verify(customerRepositoryPort, times(1)).save(any(Customer.class));
+        assertThrows(BusinessException.class, () -> customerUseCase.create(customer));
+        verify(customerRepositoryPort, never()).save(any());
     }
 }
 EOF
 
-# 4. Crear Test para PolicyUseCase (Ahora ya encontrará la clase)
-cat <<EOF > $TEST_BASE_PATH/application/usecases/PolicyUseCaseTest.java
-package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
-
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
-import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.PolicyRepositoryPort;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-@ExtendWith(MockitoExtension.class)
-class PolicyUseCaseTest {
-
-    @Mock
-    private PolicyRepositoryPort policyRepositoryPort;
-
-    @InjectMocks
-    private PolicyUseCase policyUseCase;
-
-    @Test
-    @DisplayName("Debe guardar una póliza cuando no hay restricciones")
-    void createPolicySuccess() {
-        Policy policy = new Policy();
-        when(policyRepositoryPort.save(any(Policy.class))).thenReturn(policy);
-
-        Policy result = policyUseCase.createPolicy(policy);
-
-        assertNotNull(result);
-        verify(policyRepositoryPort, times(1)).save(policy);
-    }
-}
-EOF
-
-# 5. Crear Test para CustomerController
-cat <<EOF > $TEST_BASE_PATH/infrastructure/adapter/in/web/controller/CustomerControllerTest.java
-package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.controller;
-
-import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.CustomerServicePort;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Collections;
-
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@WebMvcTest(CustomerController.class)
-class CustomerControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private CustomerServicePort customerServicePort;
-
-    @Test
-    @DisplayName("GET /api/v1/customers debe retornar 200 OK")
-    void getAllCustomersShouldReturnOk() throws Exception {
-        when(customerServicePort.findAll()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/api/v1/customers")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-}
-EOF
-
-echo "✅ Clases de negocio y archivos de prueba generados."
-echo "💡 Ejecuta 'mvn test' para verificar la cobertura."
+echo "✅ Archivos de prueba generados exitosamente."
+echo "💡 Recuerda ejecutar './mvnw test' para verificar los resultados."

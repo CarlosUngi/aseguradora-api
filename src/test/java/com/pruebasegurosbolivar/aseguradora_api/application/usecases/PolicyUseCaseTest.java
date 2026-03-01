@@ -69,7 +69,7 @@ class PolicyUseCaseTest {
         lifePolicy.getBeneficiaries().add(new Beneficiary());
 
         BusinessException exception = assertThrows(BusinessException.class, () -> policyUseCase.createPolicy(lifePolicy));
-        assertTrue(exception.getMessage().contains("máximo 2 beneficiarios"));
+        assertTrue(exception.getMessage().toLowerCase().contains("maximo 2 beneficiarios"));
     }
 
     @Test

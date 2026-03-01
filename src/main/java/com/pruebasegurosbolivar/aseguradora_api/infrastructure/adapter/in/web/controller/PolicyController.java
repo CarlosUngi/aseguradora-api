@@ -1,6 +1,7 @@
 package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.controller;
 
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.exception.BusinessException;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyCreateRequest;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyResponse;
@@ -56,10 +57,9 @@ public class PolicyController {
     @GetMapping("/{id}")
     @Operation(summary = "Obtener una póliza por ID", description = "Obtiene una póliza por su identificador único.")
     public ResponseEntity<PolicyResponse> getPolicyById(@PathVariable Long id) {
+        // Si no existe, getPolicyDetail lanzará BusinessException
         Policy policy = policyServicePort.getPolicyDetail(id);
-        return (policy != null)
-                ? ResponseEntity.ok(policyMapper.toResponse(policy))
-                : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(policyMapper.toResponse(policy));
     }
 
     /**

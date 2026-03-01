@@ -134,12 +134,8 @@ public class PolicyUseCase implements PolicyServicePort {
 
     @Override
     public Policy getPolicyDetail(Long policyId) {
-        Policy policy = policyRepositoryPort.findById(policyId).orElse(null);
-        if (Optional.ofNullable(policy).isEmpty()) {
-            throw new BusinessException("No se encontró la póliza con ID: " + policyId);
-        }
-        return policy;
-
+       return policyRepositoryPort.findById(policyId)
+            .orElseThrow(() -> new BusinessException("No se encontró la póliza con ID: " + policyId));
     }
 
     @Override
