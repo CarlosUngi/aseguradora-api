@@ -1,5 +1,6 @@
 package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
 
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Beneficiary;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.PolicyRepositoryPort;
@@ -29,12 +30,19 @@ public class PolicyUseCase implements PolicyServicePort {
     }
 
     @Override
-    public List<Policy> findByPolicyList() {
-        return policyRepositoryPort.findAll();
+    public Policy getPolicyDetail(Long policyId) {
+        return policyRepositoryPort.findById(policyId).orElse(null);
     }
 
     @Override
-    public Policy getPolicyDetail(Long policyId) {
-        return policyRepositoryPort.findById(policyId).orElse(null);
+    public List<Policy> findByPolicyListByClient(Long customerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByPolicyListByClient'");
+    }
+
+    @Override
+    public List<Beneficiary> findBeneficiaryByPolicyId(Long policyId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findBeneficiaryByPolicyId'");
     }
 }

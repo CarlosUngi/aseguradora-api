@@ -1,5 +1,6 @@
 package com.pruebasegurosbolivar.aseguradora_api.domain.ports.in;
 
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Beneficiary;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import java.util.List;
  */
 public interface PolicyServicePort {
     Policy createPolicy(Policy policy);
-    List<Policy> findByPolicyList();
+    List<Policy> findByPolicyListByClient(Long customerId);
     Policy getPolicyDetail(Long policyId);
+    List<Beneficiary> findBeneficiaryByPolicyId(Long policyId);
 }
