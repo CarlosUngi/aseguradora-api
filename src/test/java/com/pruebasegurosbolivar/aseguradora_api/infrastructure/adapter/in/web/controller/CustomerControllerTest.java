@@ -1,16 +1,24 @@
 package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.controller;
 
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.CustomerServicePort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,12 +33,32 @@ class CustomerControllerTest {
     private CustomerServicePort customerServicePort;
 
     @Test
-    @DisplayName("GET /api/v1/customers debe retornar 200 OK")
-    void getAllCustomersShouldReturnOk() throws Exception {
-        when(customerServicePort.findAll()).thenReturn(Collections.emptyList());
+    @DisplayName("GET /api/v1/customers debe retornar una página de clientes")
+    void findAllCustomersPaged() throws Exception {
+        // 1. Arrange: Preparamos los datos de prueba
+        Customer customer = new Customer();
+        customer.setNombres("Carlos");
 
+        // Creamos una página ficticia que devolverá el mock del servicio
+        Page<Customer> customerPage = new PageImpl<>(Collections.singletonList(customer));
+
+        // Configuramos el mock para que cuando el controlador llame al servicio,
+        // devuelva la página
+        when(customerServicePort.findAll(any(Pageable.class))).thenReturn(customerPage);
+
+        // 2. Act & Assert: Simulamos la petición GET
         mockMvc.perform(get("/api/v1/customers")
+                .param("page", "0")
+                .param("size", "10")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()) // Verifica HTTP 200
+                .andExpect(result -> {
+                    // Aquí verificamos que la estructura del JSON sea de una página (Page)
+                    String content = result.getResponse().getContentAsString();
+                    assertNotNull(content);
+                });
+
+        // Verificamos que el controlador realmente llamó al servicio una vez
+        verify(customerServicePort, times(1)).findAll(any(Pageable.class));
     }
 }

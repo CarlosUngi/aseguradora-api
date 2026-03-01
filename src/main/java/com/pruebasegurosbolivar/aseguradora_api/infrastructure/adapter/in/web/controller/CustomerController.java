@@ -2,9 +2,12 @@ package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.c
 
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.CustomerServicePort;
+import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.CustomerCreateRequest;
+import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.CustomerUpdateRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Pageable;
@@ -63,7 +66,15 @@ public class CustomerController {
      */
     @Operation(summary = "Crear un nuevo cliente", description = "Crea un nuevo cliente en la base de datos")
     @PostMapping
-    public ResponseEntity<Customer> create(@RequestBody Customer customer) {
+    public ResponseEntity<Customer> create(@Valid @RequestBody CustomerCreateRequest request) {
+        Customer customer = new Customer();
+        customer.setTipoDocumento(request.getTipoDocumento());
+        customer.setNumeroDocumento(request.getNumeroDocumento());
+        customer.setNombres(request.getNombres());
+        customer.setApellidos(request.getApellidos());
+        customer.setEmail(request.getEmail());
+        customer.setTelefono(request.getTelefono());
+        customer.setFechaNacimiento(request.getFechaNacimiento());
         return ResponseEntity.ok(customerServicePort.create(customer));
     }
 
@@ -75,8 +86,17 @@ public class CustomerController {
      */
     @Operation(summary = "Actualizar un cliente", description = "Actualiza un cliente en la base de datos")
     @PutMapping
-    public ResponseEntity<Customer> update(@RequestBody Customer Customer) {
-        return ResponseEntity.ok(customerServicePort.update(Customer.getId(), Customer));
+    public ResponseEntity<Customer> update(@Valid @RequestBody CustomerUpdateRequest request) {
+        Customer customer = new Customer();
+        customer.setId(request.getId());
+        customer.setTipoDocumento(request.getTipoDocumento());
+        customer.setNumeroDocumento(request.getNumeroDocumento());
+        customer.setNombres(request.getNombres());
+        customer.setApellidos(request.getApellidos());
+        customer.setEmail(request.getEmail());
+        customer.setTelefono(request.getTelefono());
+        customer.setFechaNacimiento(request.getFechaNacimiento());
+        return ResponseEntity.ok(customerServicePort.update(request.getId(), customer));
     }
 
     /**
