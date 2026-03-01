@@ -1,9 +1,11 @@
 package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.controller;
 
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.exception.BusinessException;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.CustomerServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.CustomerCreateRequest;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.CustomerUpdateRequest;
+import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.mapper.CustomerMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,13 +16,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 /**
  * Adaptador de entrada REST para la gestión de clientes.
  * Expone los endpoints necesarios para el CRUD de la entidad Customer.
  */
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
 
     private final CustomerServicePort customerServicePort;
+    private final CustomerMapper customerMapper;
 
     /**
      * {@inheritDoc}
@@ -66,18 +69,12 @@ public class CustomerController {
      */
     @Operation(summary = "Crear un nuevo cliente", description = "Crea un nuevo cliente en la base de datos")
     @PostMapping
-    public ResponseEntity<Customer> create(@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", examples = {
-        @io.swagger.v3.oas.annotations.media.ExampleObject(name = "Crear Cliente", summary = "Ejemplo para crear un nuevo cliente", value = "{\"tipoDocumento\": \"CC\", \"numeroDocumento\": \"123456789\", \"nombres\": \"Juan\", \"apellidos\": \"Perez\", \"email\": \"juan.perez@example.com\", \"telefono\": \"3001234567\", \"fechaNacimiento\": \"1990-01-15\"}")
-    })) @Valid @RequestBody CustomerCreateRequest request) {
-        Customer customer = new Customer();
-        customer.setTipoDocumento(request.getTipoDocumento());
-        customer.setNumeroDocumento(request.getNumeroDocumento());
-        customer.setNombres(request.getNombres());
-        customer.setApellidos(request.getApellidos());
-        customer.setEmail(request.getEmail());
-        customer.setTelefono(request.getTelefono());
-        customer.setFechaNacimiento(request.getFechaNacimiento());
-        return ResponseEntity.ok(customerServicePort.create(customer));
+    public ResponseEntity<Customer> create(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "application/json", examples = {
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(name = "Crear Cliente", summary = "Ejemplo para crear un nuevo cliente", value = "{\"tipoDocumento\": \"CC\", \"numeroDocumento\": \"123456789\", \"nombres\": \"Juan\", \"apellidos\": \"Perez\", \"email\": \"juan.perez@example.com\", \"telefono\": \"3001234567\", \"fechaNacimiento\": \"1990-01-15\"}")
+            })) @Valid @RequestBody CustomerCreateRequest request) {
+        Customer customer = customerMapper.toDomain(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(customerServicePort.create(customer));
     }
 
     /**
@@ -90,13 +87,12 @@ public class CustomerController {
     @PutMapping("/{id}")
     public ResponseEntity<Customer> update(@PathVariable Long id,
             @Valid @RequestBody CustomerUpdateRequest request) {
-        Customer customer = new Customer();
-        customer.setNombres(request.getNombres());
-        customer.setApellidos(request.getApellidos());
-        customer.setEmail(request.getEmail());
-        customer.setTelefono(request.getTelefono());
-        customer.setFechaNacimiento(request.getFechaNacimiento());
-        return ResponseEntity.ok(customerServicePort.update(id, customer));
+        return customerServicePort.findById(id)
+                .map(existingCustomer -> {
+                    customerMapper.updateCustomerFromDto(request, existingCustomer);
+                    return ResponseEntity.ok(customerServicePort.update(id, existingCustomer));
+                })
+                .orElseThrow(() -> new BusinessException("Cliente no encontrado con id: " + id));
     }
 
     /**

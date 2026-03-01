@@ -1,28 +1,21 @@
 package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.controller;
 
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Beneficiary;
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.PolicyType;
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Vehicle;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyCreateRequest;
+import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.mapper.PolicyMapper;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
-import java.lang.foreign.Linker.Option;
-import java.util.Collections;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/policies")
@@ -31,6 +24,7 @@ import java.util.Optional;
 public class PolicyController {
 
     private final PolicyServicePort policyServicePort;
+    private final PolicyMapper policyMapper;
 
     /**
      * Crea una nueva póliza basada en la solicitud proporcionada.
@@ -47,41 +41,8 @@ public class PolicyController {
                     @ExampleObject(name = "Póliza de Vehículo", summary = "Ejemplo para un vehículo", value = "{ \"customerId\": 1, \"policyTypeId\": 2, \"fechaInicio\": \"2026-03-01\", \"vehicles\": [{ \"placa\": \"KGV123\", \"marca\": \"Toyota\", \"modelo\": \"Prado\", \"anio\": \"2023\" }] }"),
                     @ExampleObject(name = "Póliza de Salud Full", summary = "Salud para cliente, esposa e hijos", value = "{ \"customerId\": 1, \"policyTypeId\": 3, \"beneficiaries\": [{ \"nombres\": \"Saray\", \"apellidos\": \"Garzón\", \"parentesco\": \"HIJO\", \"numeroDocumento\": \"112233\" }] }")
             })) @Valid @RequestBody PolicyCreateRequest request) {
-        // NOTA: Este es un mapeo simplificado. En una aplicación real, usarías una
-        // librería de mapeo como MapStruct.
-        Policy policy = new Policy();
-        policy.setCustomer(new Customer());
-        policy.getCustomer().setId(request.getCustomerId());
-        policy.setPolicyType(new PolicyType());
-        policy.getPolicyType().setId(request.getPolicyTypeId());
-        policy.setFechaInicio(request.getFechaInicio());
-        policy.setFechaFin(request.getFechaFin());
-        policy.setTarifaTotal(request.getTarifaTotal());
-        policy.setEstado("activo");
-
-        if (!Optional.ofNullable(request.getBeneficiaries()).filter(b -> !b.isEmpty()).isEmpty()) {
-            policy.setBeneficiaries(request.getBeneficiaries().stream().map(b -> {
-                Beneficiary beneficiary = new Beneficiary();
-                beneficiary.setNombres(b.getNombres());
-                beneficiary.setApellidos(b.getApellidos());
-                beneficiary.setParentesco(b.getParentesco());
-                beneficiary.setNumeroDocumento(b.getNumeroDocumento());
-                return beneficiary;
-            }).collect(Collectors.toList()));
-        }
-        if (!Optional.ofNullable(request.getVehicles()).filter(v -> !v.isEmpty()).isEmpty()) {
-            policy.setVehicles(request.getVehicles().stream().map(v -> {
-                Vehicle vehicle = new Vehicle();
-                vehicle.setPlaca(v.getPlaca());
-                vehicle.setMarca(v.getMarca());
-                vehicle.setModelo(v.getModelo());
-                vehicle.setAnio(v.getAnio());
-                return vehicle;
-            }).collect(Collectors.toList()));
-        }
-
-        Policy createdPolicy = policyServicePort.createPolicy(policy);
-        return new ResponseEntity<>(createdPolicy, HttpStatus.CREATED);
+        Policy policyDomain = policyMapper.toDomain(request);
+    return ResponseEntity.ok(policyServicePort.createPolicy(policyDomain));
     }
 
     /**

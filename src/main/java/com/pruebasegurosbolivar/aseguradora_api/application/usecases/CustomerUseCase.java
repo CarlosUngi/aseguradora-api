@@ -20,11 +20,11 @@ public class CustomerUseCase implements CustomerServicePort {
 
     @Override
     public Customer create(Customer customer) {
-       customerRepositoryPort.findByNumeroDocumento(customer.getNumeroDocumento())
-        .ifPresent(c -> {
-            throw new BusinessException("Ya existe un cliente registrado con el número de documento: " 
-                + customer.getNumeroDocumento());
-        });
+        customerRepositoryPort.findByNumeroDocumento(customer.getNumeroDocumento())
+                .ifPresent(c -> {
+                    throw new BusinessException("Ya existe un cliente registrado con el número de documento: "
+                            + customer.getNumeroDocumento());
+                });
         return customerRepositoryPort.save(customer);
     }
 
@@ -34,25 +34,16 @@ public class CustomerUseCase implements CustomerServicePort {
     }
 
     @Override
-    public Page<Customer> findAll(Pageable pageable){
-       /**
-     * Delega la búsqueda paginada al puerto de salida (repositorio).
-     */
-       return customerRepositoryPort.findAll(pageable);
+    public Page<Customer> findAll(Pageable pageable) {
+        /**
+         * Delega la búsqueda paginada al puerto de salida (repositorio).
+         */
+        return customerRepositoryPort.findAll(pageable);
     }
 
     @Override
     public Customer update(Long id, Customer customer) {
-        return customerRepositoryPort.findById(id)
-        .map(existingCustomer -> {
-            existingCustomer.setNombres(customer.getNombres());
-            existingCustomer.setApellidos(customer.getApellidos());
-            existingCustomer.setEmail(customer.getEmail());
-            existingCustomer.setTelefono(customer.getTelefono());
-            existingCustomer.setFechaNacimiento(customer.getFechaNacimiento());
-            return customerRepositoryPort.save(existingCustomer);
-        })
-        .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
+        return customerRepositoryPort.save(customer);
     }
 
     @Override

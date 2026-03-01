@@ -3,11 +3,13 @@ package com.pruebasegurosbolivar.aseguradora_api.domain.model.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Entidad núcleo del sistema que gestiona los contratos de seguros.
- * Centraliza la relación con clientes, tipos de póliza, beneficiarios y vehículos.
+ * Centraliza la relación con clientes, tipos de póliza, beneficiarios y
+ * vehículos.
  */
 @Entity
 @Table(name = "policies")
@@ -39,18 +41,15 @@ public class Policy {
     @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
     private List<Beneficiary> beneficiaries;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "policy_vehicle",
-        joinColumns = @JoinColumn(name = "policy_id"),
-        inverseJoinColumns = @JoinColumn(name = "vehicle_id")
-    )
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(name = "policy_vehicle", joinColumns = @JoinColumn(name = "policy_id"), inverseJoinColumns = @JoinColumn(name = "vehicle_id"))
     private List<Vehicle> vehicles;
 
     public Policy() {
     }
 
-    public Policy(Long id, Customer customer, PolicyType policyType, LocalDate fechaInicio, LocalDate fechaFin, BigDecimal tarifaTotal, String estado, List<Beneficiary> beneficiaries, List<Vehicle> vehicles) {
+    public Policy(Long id, Customer customer, PolicyType policyType, LocalDate fechaInicio, LocalDate fechaFin,
+            BigDecimal tarifaTotal, String estado, List<Beneficiary> beneficiaries, List<Vehicle> vehicles) {
         this.id = id;
         this.customer = customer;
         this.policyType = policyType;
@@ -60,6 +59,25 @@ public class Policy {
         this.estado = estado;
         this.beneficiaries = beneficiaries;
         this.vehicles = vehicles;
+    }
+
+    public void addBeneficiary(Beneficiary beneficiary) {
+        if (this.beneficiaries == null)
+            this.beneficiaries = new ArrayList<>();
+        this.beneficiaries.add(beneficiary);
+        beneficiary.setPolicy(this); // Sincronización bidireccional
+    }
+
+    public void addVehicle(Vehicle vehicle) {
+        if (this.vehicles == null)
+            this.vehicles = new ArrayList<>();
+        this.vehicles.add(vehicle);
+
+        if (vehicle.getPolicies() == null)
+            vehicle.setPolicies(new ArrayList<>());
+        if (!vehicle.getPolicies().contains(this)) {
+            vehicle.getPolicies().add(this);
+        }
     }
 
     public Long getId() {
