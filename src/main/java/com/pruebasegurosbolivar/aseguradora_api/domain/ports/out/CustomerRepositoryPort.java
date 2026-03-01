@@ -16,4 +16,5 @@ public interface CustomerRepositoryPort {
     Optional<Customer> findById(Long id);
     Page<Customer> findAll(Pageable pageable);
     void deleteById(Long id);
+    Optional<Customer> findByNumeroDocumento(String numero);
 }

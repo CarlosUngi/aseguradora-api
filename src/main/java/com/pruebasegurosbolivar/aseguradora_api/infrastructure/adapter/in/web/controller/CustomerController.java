@@ -85,18 +85,16 @@ public class CustomerController {
      * @return ResponseEntity con la objeto editado del cliente y estado 200 OK.
      */
     @Operation(summary = "Actualizar un cliente", description = "Actualiza un cliente en la base de datos")
-    @PutMapping
-    public ResponseEntity<Customer> update(@Valid @RequestBody CustomerUpdateRequest request) {
+    @PutMapping("/{id}")
+    public ResponseEntity<Customer> update(@PathVariable Long id,
+            @Valid @RequestBody CustomerUpdateRequest request) {
         Customer customer = new Customer();
-        customer.setId(request.getId());
-        customer.setTipoDocumento(request.getTipoDocumento());
-        customer.setNumeroDocumento(request.getNumeroDocumento());
         customer.setNombres(request.getNombres());
         customer.setApellidos(request.getApellidos());
         customer.setEmail(request.getEmail());
         customer.setTelefono(request.getTelefono());
         customer.setFechaNacimiento(request.getFechaNacimiento());
-        return ResponseEntity.ok(customerServicePort.update(request.getId(), customer));
+        return ResponseEntity.ok(customerServicePort.update(id, customer));
     }
 
     /**

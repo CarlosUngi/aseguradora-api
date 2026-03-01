@@ -33,32 +33,24 @@ class CustomerControllerTest {
     private CustomerServicePort customerServicePort;
 
     @Test
-    @DisplayName("GET /api/v1/customers debe retornar una página de clientes")
+    @DisplayName("Debe listar clientes de forma paginada")
     void findAllCustomersPaged() throws Exception {
-        // 1. Arrange: Preparamos los datos de prueba
+        // Arrange: Solo usamos el MockBean que ya declaraste arriba
         Customer customer = new Customer();
         customer.setNombres("Carlos");
-
-        // Creamos una página ficticia que devolverá el mock del servicio
         Page<Customer> customerPage = new PageImpl<>(Collections.singletonList(customer));
 
-        // Configuramos el mock para que cuando el controlador llame al servicio,
-        // devuelva la página
+        // Configuramos el Mock del SERVICIO (no del repositorio)
         when(customerServicePort.findAll(any(Pageable.class))).thenReturn(customerPage);
 
-        // 2. Act & Assert: Simulamos la petición GET
+        // Act & Assert: Simulamos la petición HTTP
         mockMvc.perform(get("/api/v1/customers")
                 .param("page", "0")
                 .param("size", "10")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()) // Verifica HTTP 200
-                .andExpect(result -> {
-                    // Aquí verificamos que la estructura del JSON sea de una página (Page)
-                    String content = result.getResponse().getContentAsString();
-                    assertNotNull(content);
-                });
+                .andExpect(status().isOk());
 
-        // Verificamos que el controlador realmente llamó al servicio una vez
+        // Verificamos que el controlador llamó al servicio
         verify(customerServicePort, times(1)).findAll(any(Pageable.class));
     }
 }

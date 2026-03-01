@@ -36,4 +36,9 @@ public class CustomerPersistenceAdapter implements CustomerRepositoryPort {
     public void deleteById(Long id) {
         jpaCustomerRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<Customer> findByNumeroDocumento(String numero) {
+        return jpaCustomerRepository.findByNumeroDocumento(numero);
+    }
 }

@@ -13,11 +13,6 @@ import java.time.LocalDate;
 @Schema(description = "Modelo para la actualización de clientes")
 public class CustomerUpdateRequest {
 
-    @NotNull(message = "El ID es obligatorio")
-    @Schema(example = "1")
-    private Long id;
-
-
     @NotBlank(message = "El tipo de documento es obligatorio")
     @Schema(example = "CC", description = "Tipo de documento (CC, CE, NIT)")
     private String tipoDocumento;

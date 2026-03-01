@@ -1,6 +1,7 @@
 package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
 
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.exception.BusinessException;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.CustomerServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.CustomerRepositoryPort;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,11 @@ public class CustomerUseCase implements CustomerServicePort {
 
     @Override
     public Customer create(Customer customer) {
-        // TODO: Implementar lógica de creación
+       customerRepositoryPort.findByNumeroDocumento(customer.getNumeroDocumento())
+        .ifPresent(c -> {
+            throw new BusinessException("Ya existe un cliente registrado con el número de documento: " 
+                + customer.getNumeroDocumento());
+        });
         return customerRepositoryPort.save(customer);
     }
 
@@ -38,8 +43,16 @@ public class CustomerUseCase implements CustomerServicePort {
 
     @Override
     public Customer update(Long id, Customer customer) {
-        // TODO: Implementar lógica de actualización
-        return null;
+        return customerRepositoryPort.findById(id)
+        .map(existingCustomer -> {
+            existingCustomer.setNombres(customer.getNombres());
+            existingCustomer.setApellidos(customer.getApellidos());
+            existingCustomer.setEmail(customer.getEmail());
+            existingCustomer.setTelefono(customer.getTelefono());
+            existingCustomer.setFechaNacimiento(customer.getFechaNacimiento());
+            return customerRepositoryPort.save(existingCustomer);
+        })
+        .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
     }
 
     @Override
