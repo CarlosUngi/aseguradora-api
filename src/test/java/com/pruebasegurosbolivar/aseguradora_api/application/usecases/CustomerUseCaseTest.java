@@ -1,6 +1,7 @@
 package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
 
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Customer;
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.exception.BusinessException;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.CustomerRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,16 +25,14 @@ class CustomerUseCaseTest {
     private CustomerUseCase customerUseCase;
 
     @Test
-    @DisplayName("Debe crear un cliente correctamente")
-    void createCustomerSuccess() {
+    @DisplayName("Debe fallar si el número de documento ya existe")
+    void createCustomerDuplicateError() {
         Customer customer = new Customer();
-        customer.setNombres("Carlos");
-        when(customerRepositoryPort.save(any(Customer.class))).thenReturn(customer);
+        customer.setNumeroDocumento("123");
+        
+        when(customerRepositoryPort.findByNumeroDocumento("123")).thenReturn(Optional.of(customer));
 
-        Customer result = customerUseCase.create(customer);
-
-        assertNotNull(result);
-        assertEquals("Carlos", result.getNombres());
-        verify(customerRepositoryPort, times(1)).save(any(Customer.class));
+        assertThrows(BusinessException.class, () -> customerUseCase.create(customer));
+        verify(customerRepositoryPort, never()).save(any());
     }
 }
