@@ -1,9 +1,12 @@
 package com.pruebasegurosbolivar.aseguradora_api.domain.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 
 /**
- * Entidad para el manejo de beneficiarios (Póliza Vida) o familiares (Póliza Salud).
+ * Entidad para el manejo de beneficiarios (Póliza Vida) o familiares (Póliza
+ * Salud).
  */
 @Entity
 @Table(name = "beneficiaries")
@@ -15,6 +18,7 @@ public class Beneficiary {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id", nullable = false)
+    @JsonIgnoreProperties("beneficiaries") // Evita que el beneficiario serialice la póliza de nuevo
     private Policy policy;
 
     private String nombres;
@@ -22,14 +26,15 @@ public class Beneficiary {
 
     @Enumerated(EnumType.STRING)
     private RelationshipType parentesco;
-    
+
     @Column(name = "numero_documento")
     private String numeroDocumento;
 
     public Beneficiary() {
     }
 
-    public Beneficiary(Long id, Policy policy, String nombres, String apellidos, RelationshipType parentesco, String numeroDocumento) {
+    public Beneficiary(Long id, Policy policy, String nombres, String apellidos, RelationshipType parentesco,
+            String numeroDocumento) {
         this.id = id;
         this.policy = policy;
         this.nombres = nombres;

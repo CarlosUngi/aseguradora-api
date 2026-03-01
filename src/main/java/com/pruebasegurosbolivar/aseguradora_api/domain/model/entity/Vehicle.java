@@ -3,6 +3,8 @@ package com.pruebasegurosbolivar.aseguradora_api.domain.model.entity;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Entidad que representa un vehículo en el sistema.
  * Se relaciona con las pólizas mediante una relación muchos a muchos.
@@ -23,6 +25,7 @@ public class Vehicle {
     private String anio;
 
     @ManyToMany(mappedBy = "vehicles")
+    @JsonIgnoreProperties("vehicles") // Evita el bucle en la relación muchos a muchos
     private List<Policy> policies;
 
     public Vehicle() {

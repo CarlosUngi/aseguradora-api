@@ -3,6 +3,7 @@ package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.c
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyCreateRequest;
+import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyResponse;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.mapper.PolicyMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +35,7 @@ public class PolicyController {
      */
     @PostMapping
     @Operation(summary = "Crear nueva póliza", description = "Permite crear pólizas de Vida, Vehículo o Salud.")
-    public ResponseEntity<Policy> create(
+    public ResponseEntity<PolicyResponse> create(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", examples = {
                     @ExampleObject(name = "Póliza de Vida - 1 Beneficiario", summary = "Vida con un beneficiario (Hijo)", value = "{ \"customerId\": 1, \"policyTypeId\": 1, \"fechaInicio\": \"2026-03-01\", \"fechaFin\": \"2027-03-01\", \"tarifaTotal\": 100000, \"beneficiaries\": [{ \"nombres\": \"Juan\", \"apellidos\": \"Garzón\", \"parentesco\": \"HIJO\", \"numeroDocumento\": \"12345678\" }] }"),
                     @ExampleObject(name = "Póliza de Vida - 2 Beneficiarios", summary = "Vida con dos beneficiarios (Cónyuge y Madre)", value = "{ \"customerId\": 1, \"policyTypeId\": 1, \"fechaInicio\": \"2026-03-01\", \"fechaFin\": \"2027-03-01\", \"tarifaTotal\": 150000, \"beneficiaries\": [{ \"nombres\": \"Shirley\", \"apellidos\": \"Perez\", \"parentesco\": \"CONYUGE\", \"numeroDocumento\": \"87654321\" }, { \"nombres\": \"Rosa\", \"apellidos\": \"Arevalo\", \"parentesco\": \"MADRE\", \"numeroDocumento\": \"55443322\" }] }"),
@@ -42,7 +43,8 @@ public class PolicyController {
                     @ExampleObject(name = "Póliza de Salud Full", summary = "Salud para cliente, esposa e hijos", value = "{ \"customerId\": 1, \"policyTypeId\": 3, \"beneficiaries\": [{ \"nombres\": \"Saray\", \"apellidos\": \"Garzón\", \"parentesco\": \"HIJO\", \"numeroDocumento\": \"112233\" }] }")
             })) @Valid @RequestBody PolicyCreateRequest request) {
         Policy policyDomain = policyMapper.toDomain(request);
-    return ResponseEntity.ok(policyServicePort.createPolicy(policyDomain));
+        Policy savedPolicy = policyServicePort.createPolicy(policyDomain);
+        return ResponseEntity.ok(policyMapper.toResponse(savedPolicy));
     }
 
     /**
@@ -53,13 +55,11 @@ public class PolicyController {
      */
     @GetMapping("/{id}")
     @Operation(summary = "Obtener una póliza por ID", description = "Obtiene una póliza por su identificador único.")
-    public ResponseEntity<Policy> getPolicyById(@PathVariable Long id) {
+    public ResponseEntity<PolicyResponse> getPolicyById(@PathVariable Long id) {
         Policy policy = policyServicePort.getPolicyDetail(id);
-        if (policy != null) {
-            return ResponseEntity.ok(policy);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return (policy != null)
+                ? ResponseEntity.ok(policyMapper.toResponse(policy))
+                : ResponseEntity.notFound().build();
     }
 
     /**
