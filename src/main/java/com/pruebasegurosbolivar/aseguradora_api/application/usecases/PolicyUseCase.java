@@ -26,7 +26,6 @@ public class PolicyUseCase implements PolicyServicePort {
     private final CustomerRepositoryPort customerRepositoryPort;
     private final BeneficiaryRepositoryPort beneficiaryRepositoryPort;
 
-
     /**
      * {@inheritDoc}
      * Implementa las reglas de negocio por tipo de póliza:
@@ -86,6 +85,9 @@ public class PolicyUseCase implements PolicyServicePort {
                 .filter(list -> !list.isEmpty())
                 .orElseThrow(
                         () -> new BusinessException("Debe incluir al menos un vehículo para este tipo de póliza."));
+
+                                
+        if(policy.getVehicles().stream().map(v->v.getPlaca()).distinct().count() < policy.getVehicles().size()) throw new BusinessException("hay placas repetidas dentro de sus vehiculos");
     }
 
     private void validateSalud(Policy policy) {
@@ -108,7 +110,8 @@ public class PolicyUseCase implements PolicyServicePort {
                             b.getParentesco() == RelationshipType.ESPOSO);
 
             if (haveParents && haveOwnFamily)
-                throw new BusinessException("La poliza de salud solo permite registro del cliente, sus padres o su familia propia ");
+                throw new BusinessException(
+                        "La poliza de salud solo permite registro del cliente, sus padres o su familia propia ");
 
         }
 
@@ -116,7 +119,12 @@ public class PolicyUseCase implements PolicyServicePort {
 
     @Override
     public Policy getPolicyDetail(Long policyId) {
-        return policyRepositoryPort.findById(policyId).orElse(null);
+        Policy policy = policyRepositoryPort.findById(policyId).orElse(null);
+        if (Optional.ofNullable(policy).isEmpty()) {
+            throw new BusinessException("No se encontró la póliza con ID: " + policyId);
+        }
+        return policy;
+
     }
 
     @Override

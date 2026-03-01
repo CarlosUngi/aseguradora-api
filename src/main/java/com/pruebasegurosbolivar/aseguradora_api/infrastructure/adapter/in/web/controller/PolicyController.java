@@ -38,7 +38,7 @@ public class PolicyController {
     public ResponseEntity<PolicyResponse> create(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", examples = {
                     @ExampleObject(name = "Póliza de Vida - 1 Beneficiario", summary = "Vida con un beneficiario (Hijo)", value = "{ \"customerId\": 1, \"policyTypeId\": 1, \"fechaInicio\": \"2026-03-01\", \"fechaFin\": \"2027-03-01\", \"tarifaTotal\": 100000, \"beneficiaries\": [{ \"nombres\": \"Juan\", \"apellidos\": \"Garzón\", \"parentesco\": \"HIJO\", \"numeroDocumento\": \"12345678\" }] }"),
-                    @ExampleObject(name = "Póliza de Vida - 2 Beneficiarios", summary = "Vida con dos beneficiarios (Cónyuge y Madre)", value = "{ \"customerId\": 1, \"policyTypeId\": 1, \"fechaInicio\": \"2026-03-01\", \"fechaFin\": \"2027-03-01\", \"tarifaTotal\": 150000, \"beneficiaries\": [{ \"nombres\": \"Shirley\", \"apellidos\": \"Perez\", \"parentesco\": \"CONYUGE\", \"numeroDocumento\": \"87654321\" }, { \"nombres\": \"Rosa\", \"apellidos\": \"Arevalo\", \"parentesco\": \"MADRE\", \"numeroDocumento\": \"55443322\" }] }"),
+                    @ExampleObject(name = "Póliza de Vida - 2 Beneficiarios", summary = "Vida con dos beneficiarios (Cónyuge y Madre)", value = "{ \"customerId\": 1, \"policyTypeId\": 1, \"fechaInicio\": \"2026-03-01\", \"fechaFin\": \"2027-03-01\", \"tarifaTotal\": 150000, \"beneficiaries\": [{ \"nombres\": \"Shirley\", \"apellidos\": \"Perez\", \"parentesco\": \"ESPOSA\", \"numeroDocumento\": \"87654321\" }, { \"nombres\": \"Rosa\", \"apellidos\": \"Arevalo\", \"parentesco\": \"MADRE\", \"numeroDocumento\": \"55443322\" }] }"),
                     @ExampleObject(name = "Póliza de Vehículo", summary = "Ejemplo para un vehículo", value = "{ \"customerId\": 1, \"policyTypeId\": 2, \"fechaInicio\": \"2026-03-01\", \"vehicles\": [{ \"placa\": \"KGV123\", \"marca\": \"Toyota\", \"modelo\": \"Prado\", \"anio\": \"2023\" }] }"),
                     @ExampleObject(name = "Póliza de Salud Full", summary = "Salud para cliente, esposa e hijos", value = "{ \"customerId\": 1, \"policyTypeId\": 3, \"beneficiaries\": [{ \"nombres\": \"Saray\", \"apellidos\": \"Garzón\", \"parentesco\": \"HIJO\", \"numeroDocumento\": \"112233\" }] }")
             })) @Valid @RequestBody PolicyCreateRequest request) {
@@ -70,8 +70,11 @@ public class PolicyController {
      */
     @GetMapping("/customer/{customerId}")
     @Operation(summary = "Obtener pólizas por ID de cliente", description = "Obtiene todas las pólizas asociadas a un cliente específico.")
-    public ResponseEntity<List<Policy>> getPoliciesByCustomerId(@PathVariable Long customerId) {
+    public ResponseEntity<List<PolicyResponse>> getPoliciesByCustomerId(@PathVariable Long customerId) {
         List<Policy> policies = policyServicePort.findByPolicyListByClient(customerId);
-        return ResponseEntity.ok(policies);
+        if (policies.isEmpty()) {
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        }
+        return ResponseEntity.ok(policyMapper.toResponseList(policies));
     }
 }
