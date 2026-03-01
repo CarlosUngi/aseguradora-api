@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface JpaPolicyRepository extends JpaRepository<Policy, Long> {
-    // Método necesario para el puerto de salida
     List<Policy> findByCustomerId(Long customerId);
 }

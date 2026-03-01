@@ -3,16 +3,20 @@ package com.pruebasegurosbolivar.aseguradora_api.application.usecases;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Beneficiary;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.RelationshipType;
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Vehicle;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.exception.BusinessException;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.BeneficiaryRepositoryPort;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.CustomerRepositoryPort;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.PolicyRepositoryPort;
+import com.pruebasegurosbolivar.aseguradora_api.domain.ports.out.VehicleRepositoryPort;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementación de los casos de uso para pólizas.
@@ -25,6 +29,7 @@ public class PolicyUseCase implements PolicyServicePort {
     private final PolicyRepositoryPort policyRepositoryPort;
     private final CustomerRepositoryPort customerRepositoryPort;
     private final BeneficiaryRepositoryPort beneficiaryRepositoryPort;
+    private final VehicleRepositoryPort vehicleRepositoryPort;
 
     /**
      * {@inheritDoc}
@@ -54,7 +59,17 @@ public class PolicyUseCase implements PolicyServicePort {
             default:
                 throw new BusinessException("Tipo de póliza no reconocido.");
         }
+        if (policy.getPolicyType().getId() == 2) { // VEHÍCULO
+            validateVehiculo(policy);
 
+            // Lógica para evitar duplicados:
+            List<Vehicle> processedVehicles = policy.getVehicles().stream()
+                    .map(v -> vehicleRepositoryPort.findByPlaca(v.getPlaca())
+                            .orElse(v)) // Si existe en BD lo usamos, si no, usamos el nuevo
+                    .collect(Collectors.toList());
+
+            policy.setVehicles(processedVehicles);
+        }
         return policyRepositoryPort.save(policy);
     }
 
@@ -86,8 +101,8 @@ public class PolicyUseCase implements PolicyServicePort {
                 .orElseThrow(
                         () -> new BusinessException("Debe incluir al menos un vehículo para este tipo de póliza."));
 
-                                
-        if(policy.getVehicles().stream().map(v->v.getPlaca()).distinct().count() < policy.getVehicles().size()) throw new BusinessException("hay placas repetidas dentro de sus vehiculos");
+        if (policy.getVehicles().stream().map(v -> v.getPlaca()).distinct().count() < policy.getVehicles().size())
+            throw new BusinessException("hay placas repetidas dentro de sus vehiculos");
     }
 
     private void validateSalud(Policy policy) {
