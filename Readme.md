@@ -13,7 +13,9 @@ Se ha seleccionado la Arquitectura Hexagonal como pilar fundamental para garanti
 *   **Seguridad y Estándares con DTOs:** Se hace uso de DTOs (Data Transfer Objects) y MapStruct para el mapeo de entidades. Esta práctica limita la exposición de la estructura interna de las tablas, mejora la seguridad de la API y cumple con los estándares de la industria moderna.
 
 
-## Diagrama de Secuencia 
+### Diagrama de Secuencia Arquitectura Hexagonal
+
+A continuación presento la secuencia de la aruitectura y comunicación entre modulos
 ```mermaid
 sequenceDiagram
     participant Web as Web Adapter (Controller)
@@ -27,6 +29,97 @@ sequenceDiagram
     Domain->>PortOut: Persistence Request
     PortOut->>DB: SQL/JPA Operation
     DB-->>Web: Response (DTO)
+```
+### Estructura de Proyecto (Arquitectura Hexagonal)
+
+```
+aseguradora-api
+├── src/main/java/com/pruebasegurosbolivar/aseguradora_api
+│   ├── application/                # Capa de Aplicación (Orquestación)
+│   │   └── usecases/               # Lógica de negocio (Ej: PolicyUseCase)
+│   ├── domain/                     # Capa de Dominio (El Corazón)
+│   │   ├── model/                  
+│   │   │   ├── entity/             # Entidades (Customer, Policy, etc.)
+│   │   │   └── exception/          # Excepciones de negocio (BusinessException)
+│   │   └── ports/                  
+│   │       ├── in/                 # Interfaces de entrada (Service Ports)
+│   │       └── out/                # Interfaces de salida (Repository Ports)
+│   └── infrastructure/             # Capa de Infraestructura (Detalles Técnicos)
+│       ├── adapter/                
+│       │   ├── in/web/             # Controladores REST, DTOs y Mappers
+│       │   └── out/persistence/    # Adaptadores de BD y Repositorios JPA
+│       └── config/                 # Configuraciones (Seguridad, Swagger, Errores)
+├── src/main/resources
+│   ├── application.properties      # Configuración de entorno y base de datos
+│   └── import.sql                  # Inicialización del catálogo (Vida, Vehículo, Salud) 
+└── pom.xml                         # Gestión de dependencias (Lombok, MapStruct, JPA)
+```
+
+## Diagrama de Flujo: Creación de Pólizas y Validación de Errores
+
+A continuación se presenta el diseño estructurado del flujo mas critico correspondiente a la creación de las polizas.
+
+``` mermaid
+sequenceDiagram
+    autonumber
+    participant Cliente as Cliente (API/Frontend)
+    participant Ctrl as PolicyController
+    participant Map as PolicyMapper
+    participant UC as PolicyUseCase
+    participant CustRepo as CustomerRepositoryPort
+    participant VehRepo as VehicleRepositoryPort
+    participant PolRepo as PolicyRepositoryPort
+    participant Handler as GlobalExceptionHandler
+
+    Cliente->>Ctrl: POST /api/v1/policies (PolicyCreateRequest)
+    
+    Note over Ctrl,Map: Mapeo de DTO a Entidad de Dominio
+    Ctrl->>Map: toDomain(request)
+    Map-->>Ctrl: Policy (Entity)
+
+    Ctrl->>UC: createPolicy(policy)
+
+    Note over UC,CustRepo: Validar existencia del cliente
+    UC->>CustRepo: findById(customerId)
+    alt Cliente no existe
+        CustRepo-->>UC: Optional.empty()
+        UC-->>Handler: throws BusinessException("Cliente no encontrado")
+        Handler-->>Cliente: 400 Bad Request
+    else Cliente existe
+        CustRepo-->>UC: Optional<Customer>
+    end
+
+    Note over UC: Orquestación de validaciones por tipo
+    
+    alt Tipo: VIDA (1)
+        UC->>UC: validateVida(policy)
+        UC->>PolRepo: findByCustomerId(id)
+        Note right of UC: Verifica si ya tiene póliza de vida,<br/>máximo 2 beneficiarios y sin vehículos.
+    else Tipo: VEHÍCULO (2)
+        UC->>UC: validateVehiculo(policy)
+        Note right of UC: Verifica que no haya beneficiarios,<br/>mínimo 1 vehículo y placas únicas.
+        loop Por cada vehículo en la solicitud
+            UC->>VehRepo: findByPlaca(placa)
+            Note right of UC: Si el vehículo ya existe,<br/>se asocia el existente.
+        end
+    else Tipo: SALUD (3)
+        UC->>UC: validateSalud(policy)
+        Note right of UC: Verifica que no haya vehículos y<br/>valida reglas de parentesco (consanguinidad).
+    end
+
+    alt Validación falla
+        UC-->>Handler: throws BusinessException (Mensaje específico)
+        Handler-->>Cliente: 400 Bad Request
+    else Validación exitosa
+        UC->>PolRepo: save(policy)
+        PolRepo-->>UC: savedPolicy
+        UC-->>Ctrl: savedPolicy
+    end
+
+    Note over Ctrl,Map: Mapeo de Entidad a DTO de Respuesta
+    Ctrl->>Map: toResponse(savedPolicy)
+    Map-->>Ctrl: PolicyResponse
+    Ctrl-->>Cliente: 200 OK (PolicyResponse)
 ```
 
 ##  Modelo de Datos
@@ -94,6 +187,22 @@ erDiagram
 ```
 
 > **Nota:** La relación entre Póliza y Vehículo se maneja mediante una tabla intermedia para permitir que un vehículo sea incluido en múltiples contratos si así se requiere.
+
+### Escalabilidad y Extensibilidad: ``` Tabla policy_types ```
+
+Se ha implementado una tabla maestra denominada ``` policy_types ```  para categorizar los productos de la aseguradora. Esta decisión de diseño desacopla la lógica de negocio de identificadores estáticos, permitiendo:
+
+Ampliación del Portafolio: Es posible integrar nuevos ramos (ej. Hogar, Mascotas, Desempleo) simplemente insertando nuevos registros en esta tabla, sin requerir cambios estructurales en la base de datos.
+
+Mantenimiento Ágil: Facilita la actualización de nombres o descripciones comerciales de los tipos de póliza de forma centralizada, en caso de requerirse cambios en la lógica de negocio hay facilidad de mantenimiento por la separación de la capa de negocio.
+
+
+## Calidad y Cobertura de Código
+Se ha implementado una estrategia de pruebas unitarias e integración enfocada en la robustez de la lógica de negocio.
+* Cobertura: El proyecto cumple con un 80% de cobertura en las capas de Controller y Service (UseCases), garantizando la validación de los flujos principales y alternos.
+* Pruebas Unitarias: Se validan reglas críticas como la restricción de una sola póliza de vida por cliente y los límites de beneficiarios.
+* Manejo de Errores: Se integró un GlobalExceptionHandler que intercepta las BusinessException para retornar códigos de estado HTTP estandarizados (200, 400, 500) según el requerimiento.
+* Herramientas: Uso de JUnit 5, Mockito para el aislamiento de dependencias y MockMvc para la validación de los contratos REST.
 
 ##  Metodología de Cocreación con IA
 
