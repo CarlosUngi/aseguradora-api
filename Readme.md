@@ -2,17 +2,34 @@
 
 Este proyecto es una solución backend diseñada para solventar la Prueba tecnica: Desarrollador Senior TI - Seguros Bolivar - 6025 - 6020
 
-## 🏗️ Arquitectura: Hexagonal (Ports & Adapters)
+##  Arquitectura: Hexagonal (Ports & Adapters)
 
 Se ha seleccionado la Arquitectura Hexagonal como pilar fundamental para garantizar el desacoplamiento entre el núcleo de negocio y las tecnologías externas.
 
-*   **Desacoplamiento Tecnológico:** La lógica de negocio es agnóstica a la base de datos o al framework. Esto permite transicionar de una base de datos en memoria (H2) a una persistencia relacional (MySQL/PostgreSQL) simplemente implementando un nuevo Adaptador, sin alterar una sola línea de lógica de negocio.
+*   **Desacoplamiento Tecnológico:** La lógica de negocio es agnóstica a la base de datos o al framework. Esto permite transicionar de una base de datos en memoria (H2) a una persistencia relacional (MySQL/PostgreSQL) simplemente implementando un nuevo Adaptador, sin alterar una sola línea de lógica de negocio. Esto permite Evolucionar sin el mayor problema de una implementación de serverless con bases noSql a un infraestructura en un servidor con una base de datos relacional si en la evolución natural de negocio se reuiere una evolución asi. 
 
 *   **Inversión de Dependencias:** La comunicación entre la capa de Aplicación (UseCases) y la Infraestructura (Adapters) se realiza estrictamente a través de Puertos (Interfaces), lo que facilita el mantenimiento y la evolución del sistema.
 
 *   **Seguridad y Estándares con DTOs:** Se hace uso de DTOs (Data Transfer Objects) y MapStruct para el mapeo de entidades. Esta práctica limita la exposición de la estructura interna de las tablas, mejora la seguridad de la API y cumple con los estándares de la industria moderna.
 
-## 📊 Modelo de Datos
+
+## Diagrama de Secuencia 
+```mermaid
+sequenceDiagram
+    participant Web as Web Adapter (Controller)
+    participant PortIn as Input Port (Service Interface)
+    participant Domain as Application (Use Case)
+    participant PortOut as Output Port (Repository Interface)
+    participant DB as Infrastructure (Persistence Adapter)
+
+    Web->>PortIn: Request Data
+    PortIn->>Domain: Execute Business Logic
+    Domain->>PortOut: Persistence Request
+    PortOut->>DB: SQL/JPA Operation
+    DB-->>Web: Response (DTO)
+```
+
+##  Modelo de Datos
 
 A continuación se presenta el modelo de entidad-relación que soporta las reglas de negocio de pólizas múltiples, beneficiarios y vehículos:
 
@@ -78,7 +95,7 @@ erDiagram
 
 > **Nota:** La relación entre Póliza y Vehículo se maneja mediante una tabla intermedia para permitir que un vehículo sea incluido en múltiples contratos si así se requiere.
 
-## 🧠 Metodología de Cocreación con IA
+##  Metodología de Cocreación con IA
 
 El desarrollo de esta solución integró el uso de Inteligencia Artificial como un Copiloto Estratégico:
 
@@ -87,15 +104,17 @@ El desarrollo de esta solución integró el uso de Inteligencia Artificial como 
 *   **Documentación y Transcripción:** La IA asistió en la transcripción de los parámetros de diseño dentro de la documentación técnica (JavaDoc) y comentarios del código.
 *   **Auditoría y Validación:** Todo el código generado fue auditado, corregido y validado manualmente para asegurar el cumplimiento de las reglas de negocio y la calidad del software.
 
-## ☁️ Propuesta de Arquitectura en AWS
+##  Propuesta de Arquitectura en AWS
 
-Basado en una experiencia previa con GCP, se propone la siguiente ruta de evolución para el despliegue en Amazon Web Services:
+BBajo una asunción de que este proyecto obedece a una entrega a un cliente, se propone la siguiente ruta de evolución para el despliegue en Amazon Web Services:
 
 ### Fase 1: MVP Agil y Serverless (Validación de Producto)
 
-*   **Cómputo:** AWS Lambda (Equivalente a Cloud Run) para procesar peticiones bajo demanda con costo optimizado.
-*   **Persistencia:** Amazon DynamoDB (NoSQL, equivalente a Firestore) para un esquema flexible que permita iterar rápidamente el modelo de negocio.
+*   **Cómputo:** AWS Lambda para procesar peticiones bajo demanda con costo optimizado.
+*   **Persistencia:** Amazon DynamoDB (NoSQL) para un esquema flexible que permita iterar rápidamente el modelo de negocio.
 *   **API Gateway:** Para la gestión de tráfico, seguridad y documentación de endpoints.
+*   **Ganancia en negocio:** Permite una validación rapida del modelo y de bajo costo debido a que los costos son bajo demanda de uso.
+  
 
 ### Fase 2: Escalamiento y Producción (Contenedores)
 
@@ -103,10 +122,11 @@ Basado en una experiencia previa con GCP, se propone la siguiente ruta de evoluc
 *   **Persistencia:** Amazon RDS (MySQL/PostgreSQL) para manejar relaciones complejas y transaccionalidad robusta.
 *   **CI/CD Pipeline:**
     *   **GitHub Actions:** Ejecución de pruebas y generación de imagen Docker.
-    *   **Amazon ECR:** Almacenamiento de imágenes (Registry).
+    *   **Amazon ECR:** Almacenamiento de imágenes.
     *   **CD:** Actualización automática del servicio en el servidor mediante el pulling de la nueva imagen.
+*   **Ganancia en negocio:** Aqui se busca un sistema mas estable y de facil mantenimiento  y escalabilidad.
 
-## 🛠️ Ejecución Local
+##  Ejecución Local
 
 ### Prerrequisitos
 
@@ -128,6 +148,9 @@ Basado en una experiencia previa con GCP, se propone la siguiente ruta de evoluc
 5.  **H2 Console:** Acceder a [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
     *   **JDBC URL:** `jdbc:h2:mem:testdb`
     *   **User:** `sa`
-
+6.  **Generación de JavaDocs:** Correr el comando
+    ```bash
+    ./mvnw javadoc:javadoc
+    ```
 ---
 *Desarrollado con enfoque en calidad, escalabilidad y buenas prácticas de ingeniería.*
