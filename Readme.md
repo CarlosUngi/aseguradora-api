@@ -2,6 +2,14 @@
 
 Este proyecto es una solución backend diseñada para solventar la Prueba tecnica: Desarrollador Senior TI - Seguros Bolivar - 6025 - 6020
 
+### Nota> Visualización de Diagramas (Mermaid)
+Este README utiliza Mermaid.js para representar la arquitectura y los flujos de datos. Para visualizarlos correctamente:
+
+GitHub/GitLab: Se renderizan automáticamente en el navegador.
+VS Code: Se recomienda la extensión Markdown Preview Mermaid Support.
+IntelliJ IDEA: Requiere el plugin Mermaid.
+Online: Si no dispone de estas herramientas, puede copiar el código del diagrama y pegarlo en Mermaid Live Editor.
+
 ##  Arquitectura: Hexagonal (Ports & Adapters)
 
 Se ha seleccionado la Arquitectura Hexagonal como pilar fundamental para garantizar el desacoplamiento entre el núcleo de negocio y las tecnologías externas.
