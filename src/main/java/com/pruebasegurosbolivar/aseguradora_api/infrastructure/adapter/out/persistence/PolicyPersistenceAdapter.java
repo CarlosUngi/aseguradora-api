@@ -17,6 +17,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PolicyPersistenceAdapter implements PolicyRepositoryPort {
 
+    /**
+     * Repositorio JPA para la entidad Policy.
+     */
     private final JpaPolicyRepository jpaPolicyRepository;
 
     /**

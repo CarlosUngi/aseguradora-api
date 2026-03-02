@@ -10,12 +10,21 @@ import jakarta.persistence.*;
 @Table(name = "policy_types")
 public class PolicyType {
 
+    /**
+     * Identificador único del tipo de póliza.
+     */
     @Id
     private Integer id;
 
+    /**
+     * Nombre descriptivo del tipo de póliza (ej. Vida, Salud).
+     */
     @Column(nullable = false)
     private String nombre;
 
+    /**
+     * Notas adicionales sobre el tipo de póliza.
+     */
     private String observaciones;
 
     /**

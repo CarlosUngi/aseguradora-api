@@ -12,25 +12,55 @@ import java.util.List;
 @Table(name = "customers")
 public class Customer {
 
+    /**
+     * Identificador único del cliente.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Tipo de documento de identidad del cliente.
+     */
     @Column(name = "tipo_documento", nullable = false)
     private String tipoDocumento;
 
+    /**
+     * Número del documento de identidad del cliente.
+     */
     @Column(name = "numero_documento", unique = true, nullable = false)
     private String numeroDocumento;
 
+    /**
+     * Nombres del cliente.
+     */
     private String nombres;
+    /**
+     * Apellidos del cliente.
+     */
     private String apellidos;
+    /**
+     * Correo electrónico de contacto del cliente.
+     */
     private String email;
+    /**
+     * Teléfono de contacto del cliente.
+     */
     private String telefono;
+    /**
+     * Indicador de si el cliente se encuentra activo.
+     */
     private Boolean activo;
 
+    /**
+     * Fecha de nacimiento del cliente.
+     */
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
 
+    /**
+     * Lista de pólizas asociadas al cliente.
+     */
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Policy> policies;
 

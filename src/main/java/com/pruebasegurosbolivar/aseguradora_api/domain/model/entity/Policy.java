@@ -15,32 +15,59 @@ import java.util.List;
 @Table(name = "policies")
 public class Policy {
 
+    /**
+     * Identificador único de la póliza.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Cliente titular de la póliza.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    /**
+     * Tipo de póliza (Vida, Vehículo, Salud).
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_type_id", nullable = false)
     private PolicyType policyType;
 
+    /**
+     * Fecha de inicio de vigencia de la póliza.
+     */
     @Column(name = "fecha_inicio")
     private LocalDate fechaInicio;
 
+    /**
+     * Fecha de fin de vigencia de la póliza.
+     */
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
+    /**
+     * Costo total de la póliza.
+     */
     @Column(name = "tarifa_total")
     private BigDecimal tarifaTotal;
 
+    /**
+     * Estado actual de la póliza (ej. Activa, Inactiva).
+     */
     private String estado;
 
+    /**
+     * Lista de beneficiarios asociados a la póliza.
+     */
     @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
     private List<Beneficiary> beneficiaries;
 
+    /**
+     * Lista de vehículos asegurados en la póliza.
+     */
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "policy_vehicle", joinColumns = @JoinColumn(name = "policy_id"), inverseJoinColumns = @JoinColumn(name = "vehicle_id"))
     private List<Vehicle> vehicles;

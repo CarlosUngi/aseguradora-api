@@ -20,6 +20,9 @@ import org.springframework.data.domain.Pageable;
 @RequiredArgsConstructor
 public class CustomerUseCase implements CustomerServicePort {
 
+    /**
+     * Puerto del repositorio de clientes para interactuar con la capa de persistencia.
+     */
     private final CustomerRepositoryPort customerRepositoryPort;
 
     /**

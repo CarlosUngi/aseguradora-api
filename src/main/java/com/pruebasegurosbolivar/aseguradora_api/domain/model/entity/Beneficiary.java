@@ -13,21 +13,39 @@ import jakarta.persistence.*;
 @Table(name = "beneficiaries")
 public class Beneficiary {
 
+    /**
+     * Identificador único del beneficiario.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * La póliza a la que está asociado el beneficiario.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id", nullable = false)
     @JsonIgnoreProperties("beneficiaries") // Evita que el beneficiario serialice la póliza de nuevo
     private Policy policy;
 
+    /**
+     * Nombres del beneficiario.
+     */
     private String nombres;
+    /**
+     * Apellidos del beneficiario.
+     */
     private String apellidos;
 
+    /**
+     * Parentesco del beneficiario con el tomador de la póliza.
+     */
     @Enumerated(EnumType.STRING)
     private RelationshipType parentesco;
 
+    /**
+     * Número de documento del beneficiario.
+     */
     @Column(name = "numero_documento")
     private String numeroDocumento;
 

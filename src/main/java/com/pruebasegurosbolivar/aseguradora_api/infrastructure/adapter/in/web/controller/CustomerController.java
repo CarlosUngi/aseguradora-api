@@ -30,13 +30,19 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CustomerController {
 
+    /**
+     * Puerto del servicio de cliente para la lógica de negocio.
+     */
     private final CustomerServicePort customerServicePort;
+    /**
+     * Mapper para convertir entre DTOs y entidades de cliente.
+     */
     private final CustomerMapper customerMapper;
 
     /**
      * Obtiene la lista de clientes con soporte para paginación.
      * 
-     * @param pageable Configuración de página (ej: ?page=0&size=10).
+     * @param pageable Configuración de página (ej: ?page=0&amp;size=10).
      * @return Página de clientes.
      */
     @Operation(summary = "Listar clientes paginados", description = "Retorna una página de clientes. Se pueden usar parámetros 'page' y 'size'.")

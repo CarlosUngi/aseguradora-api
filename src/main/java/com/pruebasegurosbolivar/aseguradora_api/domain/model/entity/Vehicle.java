@@ -13,17 +13,35 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table(name = "vehicles")
 public class Vehicle {
 
+    /**
+     * Identificador único del vehículo.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Placa única del vehículo.
+     */
     @Column(unique = true, nullable = false)
     private String placa;
 
+    /**
+     * Marca del vehículo.
+     */
     private String marca;
+    /**
+     * Modelo o línea del vehículo.
+     */
     private String modelo;
+    /**
+     * Año del modelo del vehículo.
+     */
     private String anio;
 
+    /**
+     * Lista de pólizas en las que está asegurado el vehículo.
+     */
     @ManyToMany(mappedBy = "vehicles")
     @JsonIgnoreProperties("vehicles") // Evita el bucle en la relación muchos a muchos
     private List<Policy> policies;

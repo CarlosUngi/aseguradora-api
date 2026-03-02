@@ -6,7 +6,15 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repositorio JPA para la entidad Policy.
+ */
 @Repository
 public interface JpaPolicyRepository extends JpaRepository<Policy, Long> {
+    /**
+     * Busca las pólizas asociadas a un cliente específico.
+     * @param customerId El ID del cliente.
+     * @return Una lista de pólizas encontradas.
+     */
     List<Policy> findByCustomerId(Long customerId);
 }

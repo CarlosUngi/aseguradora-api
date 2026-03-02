@@ -14,6 +14,9 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
+    /**
+     * Repositorio JPA para la entidad Vehicle.
+     */
     private final JpaVehicleRepository jpaVehicleRepository;
 
     /**

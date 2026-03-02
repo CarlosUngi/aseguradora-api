@@ -26,9 +26,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PolicyUseCase implements PolicyServicePort {
 
+    /**
+     * Puerto del repositorio de pólizas para interactuar con la capa de persistencia.
+     */
     private final PolicyRepositoryPort policyRepositoryPort;
+    /**
+     * Puerto del repositorio de clientes para interactuar con la capa de persistencia.
+     */
     private final CustomerRepositoryPort customerRepositoryPort;
+    /**
+     * Puerto del repositorio de beneficiarios para interactuar con la capa de persistencia.
+     */
     private final BeneficiaryRepositoryPort beneficiaryRepositoryPort;
+    /**
+     * Puerto del repositorio de vehículos para interactuar con la capa de persistencia.
+     */
     private final VehicleRepositoryPort vehicleRepositoryPort;
 
     /**

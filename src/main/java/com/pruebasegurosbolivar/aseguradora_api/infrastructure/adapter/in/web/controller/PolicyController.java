@@ -28,7 +28,13 @@ import java.util.List;
 @Tag(name = "Gestión de Pólizas", description = "APIs para la gestión de pólizas de seguros")
 public class PolicyController {
 
+    /**
+     * Puerto del servicio de pólizas para la lógica de negocio.
+     */
     private final PolicyServicePort policyServicePort;
+    /**
+     * Mapper para convertir entre DTOs y entidades de póliza.
+     */
     private final PolicyMapper policyMapper;
 
     /**

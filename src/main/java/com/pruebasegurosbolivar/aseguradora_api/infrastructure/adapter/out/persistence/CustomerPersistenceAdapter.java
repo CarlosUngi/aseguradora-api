@@ -19,6 +19,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomerPersistenceAdapter implements CustomerRepositoryPort {
 
+    /**
+     * Repositorio JPA para la entidad Customer.
+     */
     private final JpaCustomerRepository jpaCustomerRepository;
 
     /**
