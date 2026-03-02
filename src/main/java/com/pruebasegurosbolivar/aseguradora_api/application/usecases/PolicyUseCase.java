@@ -73,6 +73,13 @@ public class PolicyUseCase implements PolicyServicePort {
         return policyRepositoryPort.save(policy);
     }
 
+    /**
+     * Valida las reglas de negocio específicas para pólizas de Vida.
+     * Verifica que no exista una póliza vigente, límite de beneficiarios y ausencia de vehículos.
+     *
+     * @param policy La póliza a validar.
+     * @param customerId El ID del cliente asociado.
+     */
     private void validateVida(Policy policy, Long customerId) {
         List<Policy> currentPolicies = policyRepositoryPort.findByCustomerId(customerId);
         boolean hasLifePolicy = currentPolicies.stream()
@@ -90,6 +97,12 @@ public class PolicyUseCase implements PolicyServicePort {
                 });
     }
 
+    /**
+     * Valida las reglas de negocio específicas para pólizas de Vehículo.
+     * Verifica que no tenga beneficiarios, que tenga vehículos y que no haya placas duplicadas.
+     *
+     * @param policy La póliza a validar.
+     */
     private void validateVehiculo(Policy policy) {
         Optional.ofNullable(policy.getBeneficiaries())
                 .filter(b -> !b.isEmpty())
@@ -105,6 +118,12 @@ public class PolicyUseCase implements PolicyServicePort {
             throw new BusinessException("hay placas repetidas dentro de sus vehiculos");
     }
 
+    /**
+     * Valida las reglas de negocio específicas para pólizas de Salud.
+     * Verifica que no tenga vehículos y valida la consanguinidad de los beneficiarios.
+     *
+     * @param policy La póliza a validar.
+     */
     private void validateSalud(Policy policy) {
         Optional.ofNullable(policy.getVehicles())
                 .filter(b -> !b.isEmpty())
@@ -132,22 +151,46 @@ public class PolicyUseCase implements PolicyServicePort {
 
     }
 
+    /**
+     * Obtiene el detalle de una póliza por su identificador.
+     *
+     * @param policyId El ID de la póliza.
+     * @return La entidad Policy encontrada.
+     * @throws BusinessException si no se encuentra la póliza.
+     */
     @Override
     public Policy getPolicyDetail(Long policyId) {
        return policyRepositoryPort.findById(policyId)
             .orElseThrow(() -> new BusinessException("No se encontró la póliza con ID: " + policyId));
     }
 
+    /**
+     * Busca todas las pólizas asociadas a un cliente específico.
+     *
+     * @param customerId El ID del cliente.
+     * @return Lista de pólizas del cliente.
+     */
     @Override
     public List<Policy> findByPolicyListByClient(Long customerId) {
         return policyRepositoryPort.findByCustomerId(customerId);
     }
 
+    /**
+     * Recupera todas las pólizas registradas en el sistema.
+     *
+     * @return Lista completa de pólizas.
+     */
     @Override
     public List<Policy> findAllPolicies() {
         return policyRepositoryPort.findAll();
     }
 
+    /**
+     * Obtiene la lista de beneficiarios asociados a una póliza.
+     *
+     * @param policyId El ID de la póliza.
+     * @return Lista de beneficiarios.
+     */
     @Override
     public List<Beneficiary> findBeneficiaryByPolicyId(Long policyId) {
         return beneficiaryRepositoryPort.findBeneficiaryByPolicyId(policyId);

@@ -20,6 +20,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Pruebas unitarias para la clase PolicyUseCase.
+ * Verifica las reglas de negocio específicas para la creación de pólizas de Vida, Vehículo y Salud.
+ */
 @ExtendWith(MockitoExtension.class)
 class PolicyUseCaseTest {
 
@@ -36,6 +40,10 @@ class PolicyUseCaseTest {
     private Customer customer;
     private Policy lifePolicy;
 
+    /**
+     * Configuración inicial para cada prueba.
+     * Inicializa los objetos simulados y los datos de prueba comunes.
+     */
     @BeforeEach
     void setUp() {
         customer = new Customer();
@@ -49,6 +57,9 @@ class PolicyUseCaseTest {
         lifePolicy.setBeneficiaries(new ArrayList<>());
     }
 
+    /**
+     * Verifica que no se permita crear una segunda póliza de Vida para un cliente que ya tiene una vigente.
+     */
     @Test
     @DisplayName("Vida: No debe permitir más de una póliza de vida por cliente")
     void createLifePolicyDuplicateError() {
@@ -58,6 +69,9 @@ class PolicyUseCaseTest {
         assertThrows(BusinessException.class, () -> policyUseCase.createPolicy(lifePolicy));
     }
 
+    /**
+     * Verifica que una póliza de Vida no exceda el límite máximo de beneficiarios permitidos (2).
+     */
     @Test
     @DisplayName("Vida: No debe permitir más de 2 beneficiarios")
     void createLifePolicyMaxBeneficiariesError() {
@@ -72,6 +86,9 @@ class PolicyUseCaseTest {
         assertTrue(exception.getMessage().toLowerCase().contains("maximo 2 beneficiarios"));
     }
 
+    /**
+     * Verifica que una póliza de Vehículo rechace la creación si no se asocia al menos un vehículo.
+     */
     @Test
     @DisplayName("Vehículo: Debe fallar si no se incluyen vehículos")
     void createVehiclePolicyNoVehiclesError() {
@@ -85,6 +102,10 @@ class PolicyUseCaseTest {
         assertThrows(BusinessException.class, () -> policyUseCase.createPolicy(vPolicy));
     }
 
+    /**
+     * Verifica la regla de consanguinidad en pólizas de Salud.
+     * No se permite mezclar beneficiarios de tipo padres con el núcleo familiar propio (hijos/cónyuge).
+     */
     @Test
     @DisplayName("Salud: No debe permitir mezclar Padres con Hijos/Esposa")
     void createHealthPolicyMixedFamilyError() {

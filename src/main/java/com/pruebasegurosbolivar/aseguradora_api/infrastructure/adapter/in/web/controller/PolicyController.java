@@ -1,7 +1,6 @@
 package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.controller;
 
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
-import com.pruebasegurosbolivar.aseguradora_api.domain.model.exception.BusinessException;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyCreateRequest;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyResponse;
@@ -19,6 +18,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Adaptador de entrada REST para la gestión de pólizas.
+ * Expone los endpoints necesarios para la creación y consulta de pólizas.
+ */
 @RestController
 @RequestMapping("/api/v1/policies")
 @RequiredArgsConstructor

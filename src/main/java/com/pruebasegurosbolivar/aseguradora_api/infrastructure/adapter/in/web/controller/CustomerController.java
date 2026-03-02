@@ -18,12 +18,12 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 /**
  * Adaptador de entrada REST para la gestión de clientes.
  * Expone los endpoints necesarios para el CRUD de la entidad Customer.
  */
-import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/v1/customers")
 @Tag(name = "Clientes", description = "Operaciones permitidas sobre la entidad Cliente")
@@ -34,7 +34,6 @@ public class CustomerController {
     private final CustomerMapper customerMapper;
 
     /**
-     * {@inheritDoc}
      * Obtiene la lista de clientes con soporte para paginación.
      * 
      * @param pageable Configuración de página (ej: ?page=0&size=10).
@@ -48,10 +47,9 @@ public class CustomerController {
 
     /**
      * Consulta un cliente específico por su identificador único.
-     * * @param id Identificador único del cliente.
      * 
-     * @return {@link ResponseEntity} con el cliente si existe, o 404 si no es
-     *         encontrado.
+     * @param id Identificador único del cliente.
+     * @return {@link ResponseEntity} con el cliente si existe, o 404 si no es encontrado.
      */
     @Operation(summary = "Consultar cliente por ID", description = "Busca un cliente específico utilizando su ID primario.")
     @GetMapping("/{id}")
@@ -63,8 +61,8 @@ public class CustomerController {
 
     /**
      * Crea un nuevo cliente en el sistema.
-     * * @param customer Datos del cliente enviados en el cuerpo de la petición.
      * 
+     * @param request Datos del cliente enviados en el cuerpo de la petición.
      * @return ResponseEntity con el cliente creado y estado 200 OK.
      */
     @Operation(summary = "Crear un nuevo cliente", description = "Crea un nuevo cliente en la base de datos")
@@ -80,8 +78,9 @@ public class CustomerController {
     /**
      * Obtiene los detalles de un cliente por su ID.
      * 
-     * @param Customer
-     * @return ResponseEntity con la objeto editado del cliente y estado 200 OK.
+     * @param id Identificador del cliente a actualizar.
+     * @param request Objeto con la información a actualizar.
+     * @return ResponseEntity con el objeto editado del cliente y estado 200 OK.
      */
     @Operation(summary = "Actualizar un cliente", description = "Actualiza un cliente en la base de datos")
     @PutMapping("/{id}")
@@ -98,8 +97,8 @@ public class CustomerController {
     /**
      * Hace borrado logico de un cliente por su ID.
      * 
-     * @param idClient
-     * @return void y estado 200 OK.
+     * @param customerId Identificador del cliente a eliminar.
+     * @return ResponseEntity vacío con estado 200 OK.
      */
     @Operation(summary = "Eliminar un cliente", description = "Elimina un cliente en la base de datos")
     @DeleteMapping("/{customerId}")
