@@ -1,5 +1,6 @@
 package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.controller;
 
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Beneficiary;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
 import com.pruebasegurosbolivar.aseguradora_api.domain.ports.in.PolicyServicePort;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyCreateRequest;
@@ -85,5 +86,16 @@ public class PolicyController {
             return ResponseEntity.ok(java.util.Collections.emptyList());
         }
         return ResponseEntity.ok(policyMapper.toResponseList(policies));
+    }
+
+    @Operation(summary = "Listar beneficiarios por póliza de salud", description = "Retorna la lista de personas cubiertas por una póliza de salud específica.")
+    @GetMapping("/{policyId}/beneficiaries")
+    public ResponseEntity<List<PolicyResponse.BeneficiaryResponse>> getBeneficiariesByHealthPolicy(
+            @PathVariable Long policyId) {
+        List<Beneficiary> beneficiaries = policyServicePort.findBeneficiaryByPolicyId(policyId);
+
+        // Utilizamos el mapper para transformar la entidad de dominio al DTO de
+        // respuesta
+        return ResponseEntity.ok(policyMapper.toBeneficiaryResponseList(beneficiaries));
     }
 }

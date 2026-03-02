@@ -27,19 +27,23 @@ import java.util.stream.Collectors;
 public class PolicyUseCase implements PolicyServicePort {
 
     /**
-     * Puerto del repositorio de pólizas para interactuar con la capa de persistencia.
+     * Puerto del repositorio de pólizas para interactuar con la capa de
+     * persistencia.
      */
     private final PolicyRepositoryPort policyRepositoryPort;
     /**
-     * Puerto del repositorio de clientes para interactuar con la capa de persistencia.
+     * Puerto del repositorio de clientes para interactuar con la capa de
+     * persistencia.
      */
     private final CustomerRepositoryPort customerRepositoryPort;
     /**
-     * Puerto del repositorio de beneficiarios para interactuar con la capa de persistencia.
+     * Puerto del repositorio de beneficiarios para interactuar con la capa de
+     * persistencia.
      */
     private final BeneficiaryRepositoryPort beneficiaryRepositoryPort;
     /**
-     * Puerto del repositorio de vehículos para interactuar con la capa de persistencia.
+     * Puerto del repositorio de vehículos para interactuar con la capa de
+     * persistencia.
      */
     private final VehicleRepositoryPort vehicleRepositoryPort;
 
@@ -87,9 +91,10 @@ public class PolicyUseCase implements PolicyServicePort {
 
     /**
      * Valida las reglas de negocio específicas para pólizas de Vida.
-     * Verifica que no exista una póliza vigente, límite de beneficiarios y ausencia de vehículos.
+     * Verifica que no exista una póliza vigente, límite de beneficiarios y ausencia
+     * de vehículos.
      *
-     * @param policy La póliza a validar.
+     * @param policy     La póliza a validar.
      * @param customerId El ID del cliente asociado.
      */
     private void validateVida(Policy policy, Long customerId) {
@@ -111,7 +116,8 @@ public class PolicyUseCase implements PolicyServicePort {
 
     /**
      * Valida las reglas de negocio específicas para pólizas de Vehículo.
-     * Verifica que no tenga beneficiarios, que tenga vehículos y que no haya placas duplicadas.
+     * Verifica que no tenga beneficiarios, que tenga vehículos y que no haya placas
+     * duplicadas.
      *
      * @param policy La póliza a validar.
      */
@@ -132,7 +138,8 @@ public class PolicyUseCase implements PolicyServicePort {
 
     /**
      * Valida las reglas de negocio específicas para pólizas de Salud.
-     * Verifica que no tenga vehículos y valida la consanguinidad de los beneficiarios.
+     * Verifica que no tenga vehículos y valida la consanguinidad de los
+     * beneficiarios.
      *
      * @param policy La póliza a validar.
      */
@@ -172,8 +179,8 @@ public class PolicyUseCase implements PolicyServicePort {
      */
     @Override
     public Policy getPolicyDetail(Long policyId) {
-       return policyRepositoryPort.findById(policyId)
-            .orElseThrow(() -> new BusinessException("No se encontró la póliza con ID: " + policyId));
+        return policyRepositoryPort.findById(policyId)
+                .orElseThrow(() -> new BusinessException("No se encontró la póliza con ID: " + policyId));
     }
 
     /**
@@ -205,6 +212,13 @@ public class PolicyUseCase implements PolicyServicePort {
      */
     @Override
     public List<Beneficiary> findBeneficiaryByPolicyId(Long policyId) {
+        Policy policy = policyRepositoryPort.findById(policyId)
+                .orElseThrow(() -> new BusinessException("No se encontró la póliza con ID: " + policyId));
+
+        if (policy.getPolicyType().getId() != 3) {
+            throw new BusinessException("La póliza consultada no es de tipo Salud.");
+        }
+
         return beneficiaryRepositoryPort.findBeneficiaryByPolicyId(policyId);
     }
 }

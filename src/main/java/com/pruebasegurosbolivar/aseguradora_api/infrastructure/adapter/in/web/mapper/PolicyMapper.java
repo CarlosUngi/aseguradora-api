@@ -1,5 +1,6 @@
 package com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.mapper;
 
+import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Beneficiary;
 import com.pruebasegurosbolivar.aseguradora_api.domain.model.entity.Policy;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyCreateRequest;
 import com.pruebasegurosbolivar.aseguradora_api.infrastructure.adapter.in.web.dto.PolicyResponse;
@@ -64,4 +65,10 @@ public interface PolicyMapper {
             policy.getBeneficiaries().forEach(b -> b.setPolicy(policy));
         }
     }
+    /**
+     * Convierte una lista de entidades Beneficiary a una lista de DTOs de beneficiarios.
+     * @param beneficiaries
+     * @return Lista de DTOs de beneficiarios.
+     */
+    List<PolicyResponse.BeneficiaryResponse> toBeneficiaryResponseList(List<Beneficiary> beneficiaries);
 }

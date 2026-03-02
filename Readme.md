@@ -1,13 +1,15 @@
 # Aseguradora API - Sistema de Gestión de Pólizas
 
-Este proyecto es una solución backend robusta diseñada para una aseguradora con una base de más de 40 millones de clientes. La aplicación permite la gestión integral de Clientes y Pólizas (Vida, Vehículo y Salud), implementando reglas de negocio complejas bajo una arquitectura altamente escalable y mantenible.
+Este proyecto es una solución backend diseñada para solventar la Prueba tecnica: Desarrollador Senior TI - Seguros Bolivar - 6025 - 6020
 
 ## 🏗️ Arquitectura: Hexagonal (Ports & Adapters)
 
 Se ha seleccionado la Arquitectura Hexagonal como pilar fundamental para garantizar el desacoplamiento entre el núcleo de negocio y las tecnologías externas.
 
 *   **Desacoplamiento Tecnológico:** La lógica de negocio es agnóstica a la base de datos o al framework. Esto permite transicionar de una base de datos en memoria (H2) a una persistencia relacional (MySQL/PostgreSQL) simplemente implementando un nuevo Adaptador, sin alterar una sola línea de lógica de negocio.
+
 *   **Inversión de Dependencias:** La comunicación entre la capa de Aplicación (UseCases) y la Infraestructura (Adapters) se realiza estrictamente a través de Puertos (Interfaces), lo que facilita el mantenimiento y la evolución del sistema.
+
 *   **Seguridad y Estándares con DTOs:** Se hace uso de DTOs (Data Transfer Objects) y MapStruct para el mapeo de entidades. Esta práctica limita la exposición de la estructura interna de las tablas, mejora la seguridad de la API y cumple con los estándares de la industria moderna.
 
 ## 📊 Modelo de Datos
